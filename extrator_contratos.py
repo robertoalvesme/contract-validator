@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 def main():
     # --- 1. Entrada de Dados ---
-    print("--- Automação de Contratos (Versão Estável + Correção Index) ---")
+    print("--- Robô de Busca de Contratos ---")
     usuario = input("Digite seu Usuário: ")
     senha = input("Digite sua Senha: ")
     fl_param = input("Digite o parâmetro FL (ex: 0050532877): ")
@@ -20,19 +20,17 @@ def main():
     # Montagem da URL Segura
     url_inicial = f"https://{usuario_safe}:{senha_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={fl_param}"
 
-    print("\nIniciando navegador (Usando driver do sistema)...")
+    print("\nIniciando navegador...")
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--start-maximized')
 
-    # ESTRATÉGIA IMPORTANTE: Não esperar carregar imagens/scripts pesados
+    # ESTRATÉGIA: Carregamento rápido (não espera imagens)
     options.page_load_strategy = 'eager'
 
-    # Usa o driver local padrão (sem tentar baixar nada da internet)
+    # Usa o driver local do sistema
     driver = webdriver.Chrome(options=options)
-
-    # Timeout de 5 minutos
     driver.set_page_load_timeout(300)
 
     contrato_encontrado = False
@@ -45,14 +43,12 @@ def main():
         try:
             driver.get(url_inicial)
         except TimeoutException:
-            print("AVISO: Timeout de carregamento inicial (prosseguindo pois usamos modo 'eager')...")
-        except Exception as e:
-            print(f"Aviso de conexão: {e}")
+            pass # Ignora timeout inicial graças ao modo 'eager'
+        except Exception:
+            pass
 
-        # Pausa extra para garantir renderização da tabela
-        time.sleep(8)
+        time.sleep(8) # Tempo de segurança para a tabela aparecer
 
-        # Tenta pegar a tabela
         try:
             linhas_tabela = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
         except:
@@ -78,7 +74,7 @@ def main():
                 except:
                     continue
 
-        print(f"Encontrados {len(links_ativos)} contratos com status 'Active'.")
+        print(f"Encontrados {len(links_ativos)} contratos ativos. Iniciando busca...")
 
         # --- 3. Varrer Contratos Ativos ---
         for i, link in enumerate(links_ativos):
@@ -89,12 +85,10 @@ def main():
 
             try:
                 driver.get(link)
-            except TimeoutException:
-                print(" -> Contrato demorou (prosseguindo)...")
             except Exception:
-                pass
+                pass # Segue o baile se demorar um pouco
 
-            time.sleep(3) # Tempo de segurança pós-carregamento
+            time.sleep(3)
 
             linhas_detalhe = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
 
@@ -104,13 +98,8 @@ def main():
                 if len(colunas_det) < 20:
                     continue
 
-                # --- CORREÇÃO DO ÍNDICE (O PULO DO GATO) ---
-                # Estava 20, mudamos para 19
+                # Coluna 19 é o Prod Skill
                 prod_skill_texto = colunas_det[19].text.strip()
-
-                # DEBUG VISUAL (Para sabermos se está lendo certo)
-                if prod_skill_texto:
-                    print(f"   [Lendo]: {prod_skill_texto}")
 
                 if skill_alvo.lower() in prod_skill_texto.lower():
                     asset_num = colunas_det[6].text.strip()
@@ -122,23 +111,23 @@ def main():
                     )
 
                     contrato_encontrado = True
-                    print("\n>>> ENCONTRADO! <<<")
+                    print("\n>>> SUCESSO! CONTRATO LOCALIZADO. <<<")
                     break
 
     except Exception as e:
-        print(f"\nERRO GERAL: {e}")
+        print(f"\nERRO: {e}")
         resultado_texto = f"Erro na execução: {str(e)}"
 
     finally:
         # --- 4. Finalização ---
         pyperclip.copy(resultado_texto)
         print("\n" + "="*30)
-        print("RESULTADO (Copiado para o Clipboard):")
+        print("RESULTADO (Já copiado para Ctrl+V):")
         print("="*30)
         print(resultado_texto)
         print("="*30)
 
-        input("Pressione ENTER para fechar o navegador...")
+        input("Pressione ENTER para fechar...")
         driver.quit()
 
 if __name__ == "__main__":
