@@ -11,7 +11,7 @@ def main():
     # --- 1. Configuração de Argumentos (CLI) ---
     parser = argparse.ArgumentParser(description='Automação de Busca de Contratos Avaya')
 
-    # Define os argumentos esperados (opcionais)
+    # Argumentos opcionais via linha de comando
     parser.add_argument('-u', '--user', help='Usuário para autenticação')
     parser.add_argument('-p', '--password', help='Senha para autenticação')
     parser.add_argument('-f', '--fl', help='Parâmetro FL (ex: 0050532877)')
@@ -21,8 +21,7 @@ def main():
 
     print("--- Robô de Busca de Contratos ---")
 
-    # --- 2. Entrada de Dados (Híbrida: Argumento ou Input) ---
-    # Se o argumento foi passado no comando, usa ele. Se não, pede via input.
+    # --- 2. Entrada de Dados ---
     if args.user:
         usuario = args.user
         print(f"Usuário informado: {usuario}")
@@ -31,7 +30,6 @@ def main():
 
     if args.password:
         senha = args.password
-        # Não imprimimos a senha por segurança
     else:
         senha = input("Digite sua Senha: ")
 
@@ -59,11 +57,8 @@ def main():
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--start-maximized')
+    options.page_load_strategy = 'eager' # Carregamento rápido
 
-    # ESTRATÉGIA: Carregamento rápido (não espera imagens)
-    options.page_load_strategy = 'eager'
-
-    # Usa o driver local do sistema
     driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(300)
 
@@ -77,11 +72,11 @@ def main():
         try:
             driver.get(url_inicial)
         except TimeoutException:
-            pass # Ignora timeout inicial graças ao modo 'eager'
+            pass
         except Exception:
             pass
 
-        time.sleep(8) # Tempo de segurança para a tabela aparecer
+        time.sleep(8)
 
         try:
             linhas_tabela = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
@@ -120,7 +115,7 @@ def main():
             try:
                 driver.get(link)
             except Exception:
-                pass # Segue o baile se demorar um pouco
+                pass
 
             time.sleep(3)
 
@@ -138,10 +133,12 @@ def main():
                 if skill_alvo.lower() in prod_skill_texto.lower():
                     asset_num = colunas_det[6].text.strip()
 
+                    # --- FORMATAÇÃO ATUALIZADA AQUI ---
                     resultado_texto = (
-                        f"Contract Found for {skill_alvo}\n"
+                        f"Contract Found\n"
                         f"Skill: {prod_skill_texto}\n"
-                        f"Asset Number: {asset_num}"
+                        f"Asset Number: {asset_num}\n"
+                        f"Contract URL: {link}"
                     )
 
                     contrato_encontrado = True
@@ -161,7 +158,6 @@ def main():
         print(resultado_texto)
         print("="*30)
 
-        # Fecha o navegador e encerra o script automaticamente
         print("Encerrando aplicação...")
         driver.quit()
         sys.exit()
