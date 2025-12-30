@@ -2,6 +2,7 @@ import time
 import pyperclip
 import argparse
 import sys
+import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
@@ -11,7 +12,6 @@ def main():
     # --- 1. Configuração de Argumentos (CLI) ---
     parser = argparse.ArgumentParser(description='Automação de Busca de Contratos Avaya')
 
-    # Argumentos opcionais via linha de comando
     parser.add_argument('-u', '--user', help='Usuário para autenticação')
     parser.add_argument('-p', '--password', help='Senha para autenticação')
     parser.add_argument('-f', '--fl', help='Parâmetro FL (ex: 0050532877)')
@@ -49,7 +49,7 @@ def main():
     usuario_safe = quote(usuario, safe='')
     senha_safe = quote(senha, safe='')
 
-    # Montagem da URL Segura
+    # Montagem da URL Segura (Com credenciais para o navegador)
     url_inicial = f"https://{usuario_safe}:{senha_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={fl_param}"
 
     print("\nIniciando navegador...")
@@ -57,7 +57,7 @@ def main():
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--start-maximized')
-    options.page_load_strategy = 'eager' # Carregamento rápido
+    options.page_load_strategy = 'eager'
 
     driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(300)
@@ -127,18 +127,20 @@ def main():
                 if len(colunas_det) < 20:
                     continue
 
-                # Coluna 19 é o Prod Skill
                 prod_skill_texto = colunas_det[19].text.strip()
 
                 if skill_alvo.lower() in prod_skill_texto.lower():
                     asset_num = colunas_det[6].text.strip()
 
-                    # --- FORMATAÇÃO ATUALIZADA AQUI ---
+                    # --- LIMPEZA DA URL (SEGURANÇA) ---
+                    # Remove o trecho "usuario:senha@" da URL antes de salvar
+                    url_limpa = re.sub(r'https://[^@]+@', 'https://', link)
+
                     resultado_texto = (
                         f"Contract Found\n"
                         f"Skill: {prod_skill_texto}\n"
                         f"Asset Number: {asset_num}\n"
-                        f"Contract URL: {link}"
+                        f"Contract URL: {url_limpa}"
                     )
 
                     contrato_encontrado = True
