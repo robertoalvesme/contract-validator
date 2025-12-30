@@ -1,17 +1,51 @@
 import time
 import pyperclip
+import argparse
+import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from urllib.parse import quote
 
 def main():
-    # --- 1. Entrada de Dados ---
+    # --- 1. Configuração de Argumentos (CLI) ---
+    parser = argparse.ArgumentParser(description='Automação de Busca de Contratos Avaya')
+
+    # Define os argumentos esperados (opcionais)
+    parser.add_argument('-u', '--user', help='Usuário para autenticação')
+    parser.add_argument('-p', '--password', help='Senha para autenticação')
+    parser.add_argument('-f', '--fl', help='Parâmetro FL (ex: 0050532877)')
+    parser.add_argument('-s', '--skill', help='Skill Alvo (ex: CM)')
+
+    args = parser.parse_args()
+
     print("--- Robô de Busca de Contratos ---")
-    usuario = input("Digite seu Usuário: ")
-    senha = input("Digite sua Senha: ")
-    fl_param = input("Digite o parâmetro FL (ex: 0050532877): ")
-    skill_alvo = input("Digite o Skill ou parte dele (ex: CM): ").strip()
+
+    # --- 2. Entrada de Dados (Híbrida: Argumento ou Input) ---
+    # Se o argumento foi passado no comando, usa ele. Se não, pede via input.
+    if args.user:
+        usuario = args.user
+        print(f"Usuário informado: {usuario}")
+    else:
+        usuario = input("Digite seu Usuário: ")
+
+    if args.password:
+        senha = args.password
+        # Não imprimimos a senha por segurança
+    else:
+        senha = input("Digite sua Senha: ")
+
+    if args.fl:
+        fl_param = args.fl
+        print(f"FL informado: {fl_param}")
+    else:
+        fl_param = input("Digite o parâmetro FL (ex: 0050532877): ")
+
+    if args.skill:
+        skill_alvo = args.skill.strip()
+        print(f"Skill informado: {skill_alvo}")
+    else:
+        skill_alvo = input("Digite o Skill ou parte dele (ex: CM): ").strip()
 
     # --- Codificação de Credenciais ---
     usuario_safe = quote(usuario, safe='')
@@ -37,7 +71,7 @@ def main():
     resultado_texto = f"Contract Not Found for {skill_alvo}"
 
     try:
-        # --- 2. Acessar Lista de Contratos ---
+        # --- 3. Acessar Lista de Contratos ---
         print(f"Acessando sistema...")
 
         try:
@@ -76,7 +110,7 @@ def main():
 
         print(f"Encontrados {len(links_ativos)} contratos ativos. Iniciando busca...")
 
-        # --- 3. Varrer Contratos Ativos ---
+        # --- 4. Varrer Contratos Ativos ---
         for i, link in enumerate(links_ativos):
             if contrato_encontrado:
                 break
@@ -119,16 +153,18 @@ def main():
         resultado_texto = f"Erro na execução: {str(e)}"
 
     finally:
-        # --- 4. Finalização ---
+        # --- 5. Finalização ---
         pyperclip.copy(resultado_texto)
         print("\n" + "="*30)
-        print("RESULTADO (Já copiado para Ctrl+V):")
+        print("RESULTADO (Copiado para Area de Transferencia):")
         print("="*30)
         print(resultado_texto)
         print("="*30)
 
-        input("Pressione ENTER para fechar...")
+        # Fecha o navegador e encerra o script automaticamente
+        print("Encerrando aplicação...")
         driver.quit()
+        sys.exit()
 
 if __name__ == "__main__":
     main()
