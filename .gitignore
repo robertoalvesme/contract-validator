@@ -31,3 +31,4 @@ bin/
 
 .idea/
 contract-finder.iml
+/build
