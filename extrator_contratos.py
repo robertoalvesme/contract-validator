@@ -155,7 +155,7 @@ def main():
         # --- 5. Finalização ---
         pyperclip.copy(resultado_texto)
         print("\n" + "="*30)
-        print("RESULTADO (Copiado para Area de Transferencia):")
+        print("RESULTADO:")
         print("="*30)
         print(resultado_texto)
         print("="*30)
