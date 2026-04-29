@@ -1,5 +1,7 @@
 py -m pip install pyinstaller
 
-py -m PyInstaller --noconsole --onefile app_contratos.py
+pyinstaller app_contratos.spec --noconfirm
+
+py -m PyInstaller --noconsole --onefile --noconfirm app_contratos.py
 
 py extrator_contratos.py -u alves153 -p 
