@@ -69,7 +69,7 @@ class ContractExtractorApp(ctk.CTk):
         self.geometry("1000x650")
 
         self.raw_skills_data = load_skills_data()
-        self.dropdown_options, self.term_to_skill_map = self.build_search_data()
+        self.skills_list, self.products_list, self.skill_to_related_map = self.build_search_data()
         self.stop_event = threading.Event()
 
         self.stored_user = ""
@@ -78,29 +78,27 @@ class ContractExtractorApp(ctk.CTk):
         self.login_screen()
 
     def build_search_data(self):
-        """Builds a mapping of all terms to their parent skill and a list of all terms for the UI."""
-        mapping = {}
-        all_terms = set()
+        """Builds lists of skills and products, and a map for related skills."""
+        skills = set()
+        products = set()
+        skill_map = {}
 
         for item in self.raw_skills_data:
             main_skill = item.get("skillName")
             if not main_skill:
                 continue
 
-            all_terms.add(main_skill)
-            mapping[main_skill] = main_skill
+            skills.add(main_skill)
+            
+            related = set(item.get("relatedSkills", []))
+            related.add(main_skill) # Include the main skill itself
+            skill_map[main_skill] = sorted(list(related))
 
-            for skill in item.get("relatedSkills", []):
-                if skill:
-                    all_terms.add(skill)
-                    mapping[skill] = main_skill
-
-            for material in item.get("relatedMaterials", []):
-                if material:
-                    all_terms.add(material)
-                    mapping[material] = main_skill
+            for product in item.get("relatedMaterials", []):
+                if product:
+                    products.add(product)
                     
-        return sorted(list(all_terms)), mapping
+        return sorted(list(skills)), sorted(list(products)), skill_map
 
     def clear_screen(self):
         for widget in self.winfo_children():
@@ -136,26 +134,67 @@ class ContractExtractorApp(ctk.CTk):
         ctk.CTkLabel(header_frame, text=f"User: {self.stored_user}", text_color="gray", font=ctk.CTkFont(size=11)).pack(side="left")
         ctk.CTkButton(header_frame, text="Logout", width=60, height=24, command=self.login_screen).pack(side="right")
         ctk.CTkLabel(sidebar, text="Search Parameters", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(10, 20), padx=20)
+        
         ctk.CTkLabel(sidebar, text="FL (Customer):").pack(anchor="w", padx=20)
         self.entry_fl = ctk.CTkEntry(sidebar, placeholder_text="e.g., 0051849434")
         self.entry_fl.pack(fill="x", padx=20, pady=(0, 15))
-        ctk.CTkLabel(sidebar, text="Skill / Product:").pack(anchor="w", padx=20)
-        self.combo_term = ctk.CTkComboBox(sidebar, values=self.dropdown_options, state="readonly")
-        self.combo_term.pack(fill="x", padx=20, pady=(0, 15))
+
+        # --- Search Type ---
+        self.search_type = ctk.StringVar(value="Skill")
+        ctk.CTkLabel(sidebar, text="Search Type:").pack(anchor="w", padx=20)
+        radio_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
+        radio_frame.pack(fill="x", padx=20, pady=(0, 10))
+        ctk.CTkRadioButton(radio_frame, text="Skill", variable=self.search_type, value="Skill", command=self.update_search_options).pack(side="left")
+        ctk.CTkRadioButton(radio_frame, text="Product", variable=self.search_type, value="Product", command=self.update_search_options).pack(side="left", padx=20)
+
+        # --- Dropdown ---
+        self.combo_term = ctk.CTkComboBox(sidebar, state="readonly")
+        self.combo_term.pack(fill="x", padx=20, pady=(0, 10))
+
+        # --- Custom Product Search ---
+        self.custom_product_var = ctk.IntVar(value=0)
+        self.check_custom_product = ctk.CTkCheckBox(sidebar, text="Search for custom product", variable=self.custom_product_var, command=self.toggle_custom_product)
+        self.entry_custom_product = ctk.CTkEntry(sidebar, placeholder_text="Enter custom product name")
+
+        self.update_search_options() # Initial setup
+
         ctk.CTkLabel(sidebar, text="Version (e.g., 8, 9, 10):").pack(anchor="w", padx=20)
         self.entry_version = ctk.CTkEntry(sidebar, placeholder_text="Optional")
         self.entry_version.pack(fill="x", padx=20, pady=(0, 25))
+        
         self.btn_start = ctk.CTkButton(sidebar, text="Start Search", command=self.start_automation, fg_color="#28a745", hover_color="darkgreen")
         self.btn_start.pack(fill="x", padx=20, pady=5)
         self.btn_stop = ctk.CTkButton(sidebar, text="Stop Search", command=self.stop_automation, fg_color="#dc3545", hover_color="darkred", state="disabled")
         self.btn_stop.pack(fill="x", padx=20, pady=5)
         self.lbl_status = ctk.CTkLabel(sidebar, text="Waiting...", text_color="gray")
         self.lbl_status.pack(pady=20, padx=20)
+        
         main_area = ctk.CTkFrame(self, fg_color="transparent")
         main_area.pack(side="right", fill="both", expand=True, padx=10, pady=10)
         ctk.CTkLabel(main_area, text="Contracts Found", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
         self.scroll_results = ctk.CTkScrollableFrame(main_area)
         self.scroll_results.pack(fill="both", expand=True)
+
+    def update_search_options(self):
+        search_mode = self.search_type.get()
+        if search_mode == "Skill":
+            self.combo_term.configure(values=self.skills_list)
+            self.combo_term.set(self.skills_list[0] if self.skills_list else "")
+            self.check_custom_product.pack_forget()
+            self.entry_custom_product.pack_forget()
+        else: # Product
+            self.combo_term.configure(values=self.products_list)
+            self.combo_term.set(self.products_list[0] if self.products_list else "")
+            self.check_custom_product.pack(anchor="w", padx=20, pady=(5,0))
+            self.toggle_custom_product() # Show/hide custom entry based on checkbox
+
+    def toggle_custom_product(self):
+        if self.custom_product_var.get() == 1:
+            self.entry_custom_product.pack(fill="x", padx=20, pady=(5, 10))
+            self.combo_term.configure(state="disabled")
+        else:
+            self.entry_custom_product.pack_forget()
+            self.combo_term.configure(state="readonly")
 
     def clear_results(self):
         for widget in self.scroll_results.winfo_children():
@@ -163,24 +202,28 @@ class ContractExtractorApp(ctk.CTk):
 
     def start_automation(self):
         fl = self.entry_fl.get().strip()
-        selected_term = self.combo_term.get()
+        search_mode = self.search_type.get()
         version_input = self.entry_version.get().strip()
+        
+        search_term = ""
+        if search_mode == "Product" and self.custom_product_var.get() == 1:
+            search_term = self.entry_custom_product.get().strip()
+        else:
+            search_term = self.combo_term.get()
 
-        if not fl or not selected_term:
-            messagebox.showwarning("Warning", "Please enter the FL and select a Skill/Product.")
+        if not fl or not search_term:
+            messagebox.showwarning("Warning", "Please enter the FL and a search term.")
             return
 
         self.clear_results()
         version_search = f"R{version_input}" if version_input else ""
         
-        search_skill = self.term_to_skill_map.get(selected_term, selected_term)
-
         self.btn_start.configure(state="disabled")
         self.btn_stop.configure(state="normal")
         self.lbl_status.configure(text="Starting process...", text_color="orange")
         self.stop_event.clear()
 
-        threading.Thread(target=self.run_bot, args=(fl, search_skill, selected_term, version_search), daemon=True).start()
+        threading.Thread(target=self.run_bot, args=(fl, search_mode, search_term, version_search), daemon=True).start()
 
     def stop_automation(self):
         self.stop_event.set()
@@ -203,7 +246,7 @@ class ContractExtractorApp(ctk.CTk):
         self.clipboard_append(text)
         messagebox.showinfo("Copied", "Contract data copied to clipboard!")
 
-    def run_bot(self, fl, search_skill, selected_term, version_search):
+    def run_bot(self, fl, search_mode, search_term, version_search):
         driver = None
         try:
             u_safe = quote(self.stored_user, safe='')
@@ -218,8 +261,7 @@ class ContractExtractorApp(ctk.CTk):
             driver.set_page_load_timeout(300)
             try:
                 driver.get(url_inicial)
-            except Exception:
-                pass
+            except Exception: pass
             time.sleep(8)
             self.after(0, lambda: self.lbl_status.configure(text="Reading contract list..."))
             active_links = []
@@ -231,8 +273,7 @@ class ContractExtractorApp(ctk.CTk):
                         try:
                             link = cols[2].find_element(By.TAG_NAME, "a").get_attribute("href")
                             active_links.append(link)
-                        except:
-                            pass
+                        except: pass
             except Exception as e:
                 print(f"Error reading table: {e}")
 
@@ -241,8 +282,7 @@ class ContractExtractorApp(ctk.CTk):
                 self.after(0, lambda idx=i, total=len(active_links): self.lbl_status.configure(text=f"Checking contract {idx+1}/{total}..."))
                 try:
                     driver.get(link)
-                except:
-                    pass
+                except: pass
                 time.sleep(3)
                 try:
                     linhas_det = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
@@ -254,12 +294,16 @@ class ContractExtractorApp(ctk.CTk):
                         prod_skill_text = c_det[19].text.strip()
                         contract_number = c_det[6].text.strip()
 
-                        if search_skill.lower() not in prod_skill_text.lower():
-                            continue
-
-                        term_match = (search_skill.lower() == selected_term.lower() or 
-                                      selected_term.lower() in material_desc_text.lower())
-                        if not term_match:
+                        match = False
+                        if search_mode == "Skill":
+                            skills_to_check = self.skill_to_related_map.get(search_term, [search_term])
+                            if any(skill.lower() in prod_skill_text.lower() for skill in skills_to_check):
+                                match = True
+                        else: # Product
+                            if search_term.lower() in material_desc_text.lower():
+                                match = True
+                        
+                        if not match:
                             continue
 
                         version_match = not version_search or version_search.upper() in material_desc_text
