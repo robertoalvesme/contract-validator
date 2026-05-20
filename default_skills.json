@@ -1,328 +1,562 @@
-{
-  "AES": {
-    "relatedSkill": [
-      "AES"
-    ],
-    "relatedMaterial": []
+[
+  {
+    "skillName": "3rd Party Resell",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "AES VM Ware": {
-    "relatedSkill": [
+  {
+    "skillName": "ACME",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "AES",
+    "relatedSkills": [
       "AES VM Ware"
     ],
-    "relatedMaterial": []
+    "relatedMaterials": []
   },
-  "AWFOS": {
-    "relatedSkill": [
-      "AWFOS"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "AES VM Ware",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Advanced Application Support": {
-    "relatedSkill": [
-      "Advanced Application Support"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "APCS Hosted and Cloud",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Aura Contact Center": {
-    "relatedSkill": [
-      "Aura Contact Center"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "AWFOS",
+    "relatedSkills": ["Workforce Management"],
+    "relatedMaterials": []
   },
-  "Aura SBC": {
-    "relatedSkill": [
-      "Aura SBC"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Adjuncts",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Avaya Aura Services": {
-    "relatedSkill": [
-      "Avaya Aura Services"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Advanced Application Support",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Avaya Converged Platform": {
-    "relatedSkill": [
-      "Avaya Converged Platform"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Agent Desktop",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Avaya Meeting Exchange": {
-    "relatedSkill": [
-      "Avaya Meeting Exchange"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Attendant Desktop",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Avaya Virtualization Platform": {
-    "relatedSkill": [
-      "Avaya Virtualization Platform"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Aura Contact Center",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "CM Services": {
-    "relatedSkill": [
-      "CM Services"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Aura SBC",
+    "relatedSkills": ["Enterprise SBC"],
+    "relatedMaterials": []
   },
-  "CMS": {
-    "relatedSkill": [
-      "CMS"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Agent for Desktop",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "CTI": {
-    "relatedSkill": [
-      "CTI"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Aura Messaging",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Collaboration Environment": {
-    "relatedSkill": [
-      "Collaboration Environment"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Aura Services",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Communication Manager": {
-    "relatedSkill": [
-      "Communication Manager"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Converged Platform",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Communication Server 1000": {
-    "relatedSkill": [
-      "Communication Server 1000"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya IQ",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Contact Center Monitoring": {
-    "relatedSkill": [
-      "Contact Center Monitoring"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Meeting Exchange",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Context Store Snap-in": {
-    "relatedSkill": [
-      "Context Store Snap-in"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Avaya Virtualization Platform",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Control Management": {
-    "relatedSkill": [
-      "Control Management"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "BCM",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Definity Medium Switch": {
-    "relatedSkill": [
-      "Definity Medium Switch"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "C3000 - Germany",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Digital": {
-    "relatedSkill": [
-      "Digital"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CCE",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Enterprise SBC": {
-    "relatedSkill": [
-      "Enterprise SBC"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CIE",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Equinox": {
-    "relatedSkill": [
-      "Equinox"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CIE - Germany",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Gateways": {
-    "relatedSkill": [
-      "Gateways"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CM Messaging",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "IP EndPoints": {
-    "relatedSkill": [
-      "IP EndPoints"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CM Services",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "IP Office": {
-    "relatedSkill": [
-      "IP Office"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CM VM Ware",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Infinity": {
-    "relatedSkill": [
-      "Infinity"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CMS",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Legacy Radvision": {
-    "relatedSkill": [
-      "Legacy Radvision"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CMS Supervisor",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Medial - Germany": {
-    "relatedSkill": [
-      "Medial - Germany"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CPaaS",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Mobile Experience": {
-    "relatedSkill": [
-      "Mobile Experience"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "CTI",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Modular Messaging": {
-    "relatedSkill": [
-      "Modular Messaging"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Carrier - Germany",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Oceana Solution": {
-    "relatedSkill": [
-      "Oceana Solution"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Client Applications",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Oceana Workspaces": {
-    "relatedSkill": [
-      "Oceana Workspaces"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Collaboration Designer Snap-in",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Oceanalytics": {
-    "relatedSkill": [
-      "Oceanalytics"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Collaboration Environment",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Officelinx": {
-    "relatedSkill": [
-      "Officelinx"
-    ],
-    "relatedMaterial": [
-      "IX Messaging"
+  {
+    "skillName": "Collector Snap-in",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Common Services Platform",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Communication Manager",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Communication Server 1000",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Contact Center Monitoring",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Context Store Snap-in",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Control Management",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Definity G3R",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Definity Medium Switch",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Digital",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "ERS X500/5600",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Enterprise SBC",
+    "relatedSkills": ["Aura SBC"],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Equinox",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Ethernet Switch",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Flare",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "G860",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Gateways",
+    "relatedSkills": [],
+    "relatedMaterials": [
+      "G450",
+      "MEDIA GATEWAY"
     ]
   },
-  "One-X EndPoints": {
-    "relatedSkill": [
-      "One-X EndPoints"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IC/OA/BA",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Partner": {
-    "relatedSkill": [
-      "Partner"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IP EndPoints",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Presence Server (IPS)": {
-    "relatedSkill": [
-      "Presence Server (IPS)"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IP Office",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Proactive Contact": {
-    "relatedSkill": [
-      "Proactive Contact"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IPO Cloud",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Proactive Outreach Manager": {
-    "relatedSkill": [
-      "Proactive Outreach Manager"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IPO Cloud Containerized",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "S8300": {
-    "relatedSkill": [
-      "S8300"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IPO Contact Center",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "S8500/S8700": {
-    "relatedSkill": [
-      "S8500/S8700"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "IR -Interactive Response",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "SLA Monitor": {
-    "relatedSkill": [
-      "SLA Monitor"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Infinity",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Secure Access Link": {
-    "relatedSkill": [
-      "Secure Access Link"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Intuity Audix",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Session Manager (ASM)": {
-    "relatedSkill": [
-      "Session Manager (ASM)"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Legacy - Germany",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Sets": {
-    "relatedSkill": [
-      "Sets"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Legacy Radvision",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "System Manager": {
-    "relatedSkill": [
-      "System Manager"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Legend",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "UCC": {
-    "relatedSkill": [
-      "UCC"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Medial - Germany",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Unspecified": {
-    "relatedSkill": [
-      "Unspecified"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Merlin",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Video Conferencing": {
-    "relatedSkill": [
-      "Video Conferencing"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Merlin Mail",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Voice Portal": {
-    "relatedSkill": [
-      "Voice Portal"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Mobile Experience",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Wireless IP": {
-    "relatedSkill": [
-      "Wireless IP"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Modular Messaging",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Witness Call Recorder": {
-    "relatedSkill": [
-      "Witness Call Recorder"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Oceana Solution",
+    "relatedSkills": [],
+    "relatedMaterials": []
   },
-  "Workforce Management": {
-    "relatedSkill": [
-      "Workforce Management"
-    ],
-    "relatedMaterial": []
+  {
+    "skillName": "Oceana Workspaces",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Oceanalytics",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Officelinx",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "One-X EndPoints",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "One-X Servers",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "OneCloud IX Workplace",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Partner",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Pod Management",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Pod Servers",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Presence Server (IPS)",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Proactive Contact",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Proactive Outreach Manager",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Real Time Messaging",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Routers/WAN",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "S8300",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "S8400",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "S8500/S8700",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "S8800",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "SAL VM Ware",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "SLA Monitor",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "SMB Data Solutions",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Secure Access Link",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Session Border Controller",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Session Manager (ASM)",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Session Manager (ASM) VM Ware",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Sets",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Software Comm System (SCS)",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "System Management",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "System Manager",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "System Manager VM Ware",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "UCC",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Unspecified",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "VSP",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Verint Cloud",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Verint WE Cloud",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Video Conferencing",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Voice Portal",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Wireless IP",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Witness Call Recorder",
+    "relatedSkills": [],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Workforce Management",
+    "relatedSkills": ["AWFOS"],
+    "relatedMaterials": []
+  },
+  {
+    "skillName": "Zang Spaces",
+    "relatedSkills": [],
+    "relatedMaterials": []
   }
-}
+]
