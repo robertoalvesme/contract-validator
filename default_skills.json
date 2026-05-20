@@ -367,7 +367,9 @@
   {
     "skillName": "Officelinx",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": [
+      "IX Messaging"
+    ]
   },
   {
     "skillName": "One-X EndPoints",
