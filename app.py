@@ -305,8 +305,11 @@ class ContractExtractorApp(ctk.CTk):
                         c_det = l_det.find_elements(By.TAG_NAME, "td")
                         if len(c_det) < 20: continue
 
+                        material_code_text = c_det[8].text.strip().upper()
                         material_desc_text = c_det[9].text.strip().upper()
-                        prod_skill_text = c_det[19].text.strip()
+                        nickname_text = c_det[12].text.strip().upper()
+                        prod_skill_text = c_det[19].text.strip().upper()
+                        minor_material_text = c_det[20].text.strip().upper() if len(c_det) > 20 else ""
                         contract_number = c_det[6].text.strip()
 
                         match = False
@@ -315,7 +318,14 @@ class ContractExtractorApp(ctk.CTk):
                             if any(skill.lower() in prod_skill_text.lower() for skill in skills_to_check):
                                 match = True
                         else: # Product
-                            if search_term.lower() in material_desc_text.lower():
+                            searchable_text = " ".join([
+                                material_code_text,
+                                material_desc_text,
+                                nickname_text,
+                                prod_skill_text,
+                                minor_material_text,
+                            ])
+                            if search_term.lower() in searchable_text.lower():
                                 match = True
                         
                         if not match:
