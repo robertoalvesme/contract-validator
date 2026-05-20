@@ -15,7 +15,6 @@ from selenium.webdriver.common.by import By
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
-EXTERNAL_SKILLS_FILE = "skills.json"
 
 def get_resource_path(relative_path):
     """Returns the absolute path to the resource, handling PyInstaller's Temp folder."""
@@ -26,40 +25,32 @@ def get_resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def load_skills_data():
-    """Loads the JSON, creating it from the default if it doesn't exist, and handles migration from the old format."""
-    if not os.path.exists(EXTERNAL_SKILLS_FILE):
-        default_path = get_resource_path("default_skills.json")
-        try:
-            with open(default_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            with open(EXTERNAL_SKILLS_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            return data
-        except Exception as e:
-            print(f"Error loading bundled default_skills.json: {e}")
-            return []
-    else:
-        with open(EXTERNAL_SKILLS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
+    """Loads the bundled default_skills.json only."""
+    default_path = get_resource_path("default_skills.json")
 
-        if isinstance(data, dict):
-            new_data = []
-            for key, value in data.items():
-                new_item = {
-                    "skillName": key,
-                    "relatedSkills": value.get("relatedSkill", []),
-                    "relatedMaterials": value.get("relatedMaterial", [])
-                }
-                new_data.append(new_item)
-            
-            try:
-                with open(EXTERNAL_SKILLS_FILE, "w", encoding="utf-8") as f:
-                    json.dump(new_data, f, indent=2, ensure_ascii=False)
-            except Exception as e:
-                print(f"Error saving migrated skills file: {e}")
-            
-            return new_data
-        return data
+    try:
+        with open(default_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        fallback_path = os.path.join(os.path.abspath("."), "default_skills.json")
+        try:
+            with open(fallback_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            raise RuntimeError(f"Unable to load default_skills.json from '{default_path}' or '{fallback_path}': {e}")
+
+    if isinstance(data, dict):
+        new_data = []
+        for key, value in data.items():
+            new_item = {
+                "skillName": key,
+                "relatedSkills": value.get("relatedSkill", []),
+                "relatedMaterials": value.get("relatedMaterial", [])
+            }
+            new_data.append(new_item)
+        return new_data
+
+    return data
 
 
 class ContractExtractorApp(ctk.CTk):
@@ -78,10 +69,22 @@ class ContractExtractorApp(ctk.CTk):
         self.login_screen()
 
     def build_search_data(self):
-        """Builds lists of skills and products, and a map for related skills."""
+        """Builds lists of skills and products, and a map for related skills. Handles both old and new key names for robustness."""
         skills = set()
         products = set()
         skill_map = {}
+
+        def _normalize_product_name(p):
+            """Normalize product name: ensure it's a string, strip whitespace and collapse internal spaces.
+            Return None for non-usable values."""
+            if not isinstance(p, str):
+                return None
+            p = p.strip()
+            if not p:
+                return None
+            # collapse multiple spaces into one
+            p = re.sub(r"\s+", " ", p)
+            return p
 
         for item in self.raw_skills_data:
             main_skill = item.get("skillName")
@@ -89,15 +92,27 @@ class ContractExtractorApp(ctk.CTk):
                 continue
 
             skills.add(main_skill)
-            
-            related = set(item.get("relatedSkills", []))
-            related.add(main_skill) # Include the main skill itself
+
+            # Handle both "relatedSkills" (new) and "relatedSkill" (old)
+            related_skills_list = item.get("relatedSkills", []) or item.get("relatedSkill", [])
+            # keep only truthy string values
+            related = set([rs for rs in related_skills_list if isinstance(rs, str) and rs.strip()])
+            related.add(main_skill)  # Include the main skill itself
             skill_map[main_skill] = sorted(list(related))
 
-            for product in item.get("relatedMaterials", []):
-                if product:
-                    products.add(product)
-                    
+            # Handle both "relatedMaterials" (new) and "relatedMaterial" (old)
+            materials_list = item.get("relatedMaterials", []) or item.get("relatedMaterial", [])
+            # materials_list may be a list or a single string; handle both
+            if isinstance(materials_list, (list, tuple)):
+                for product in materials_list:
+                    norm = _normalize_product_name(product)
+                    if norm:
+                        products.add(norm)
+            else:
+                norm = _normalize_product_name(materials_list)
+                if norm:
+                    products.add(norm)
+
         return sorted(list(skills)), sorted(list(products)), skill_map
 
     def clear_screen(self):
