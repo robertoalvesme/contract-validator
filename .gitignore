@@ -32,3 +32,4 @@ bin/
 .idea/
 contract-finder.iml
 /build
+cf_debug.log
