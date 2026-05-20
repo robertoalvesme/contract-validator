@@ -64,8 +64,11 @@ class ContractExtractorApp(ctk.CTk):
         """Creates a dictionary mapping both Skills AND Products back to the main Group Key."""
         mapping = {}
         for group_key, config in self.raw_skills_data.items():
-            mapping[group_key] = group_key
-            for material in config.get("relatedMaterial", []):
+            mapping[group_key] = group_key # Add the main group key
+            for skill in config.get("relatedSkill", []): # Add related skills
+                if skill:
+                    mapping[skill] = group_key
+            for material in config.get("relatedMaterial", []): # Add related materials
                 if material:
                     mapping[material] = group_key
         return mapping
