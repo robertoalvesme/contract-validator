@@ -1,0 +1,328 @@
+{
+  "AES": {
+    "relatedSkill": [
+      "AES"
+    ],
+    "relatedMaterial": []
+  },
+  "AES VM Ware": {
+    "relatedSkill": [
+      "AES VM Ware"
+    ],
+    "relatedMaterial": []
+  },
+  "AWFOS": {
+    "relatedSkill": [
+      "AWFOS"
+    ],
+    "relatedMaterial": []
+  },
+  "Advanced Application Support": {
+    "relatedSkill": [
+      "Advanced Application Support"
+    ],
+    "relatedMaterial": []
+  },
+  "Aura Contact Center": {
+    "relatedSkill": [
+      "Aura Contact Center"
+    ],
+    "relatedMaterial": []
+  },
+  "Aura SBC": {
+    "relatedSkill": [
+      "Aura SBC"
+    ],
+    "relatedMaterial": []
+  },
+  "Avaya Aura Services": {
+    "relatedSkill": [
+      "Avaya Aura Services"
+    ],
+    "relatedMaterial": []
+  },
+  "Avaya Converged Platform": {
+    "relatedSkill": [
+      "Avaya Converged Platform"
+    ],
+    "relatedMaterial": []
+  },
+  "Avaya Meeting Exchange": {
+    "relatedSkill": [
+      "Avaya Meeting Exchange"
+    ],
+    "relatedMaterial": []
+  },
+  "Avaya Virtualization Platform": {
+    "relatedSkill": [
+      "Avaya Virtualization Platform"
+    ],
+    "relatedMaterial": []
+  },
+  "CM Services": {
+    "relatedSkill": [
+      "CM Services"
+    ],
+    "relatedMaterial": []
+  },
+  "CMS": {
+    "relatedSkill": [
+      "CMS"
+    ],
+    "relatedMaterial": []
+  },
+  "CTI": {
+    "relatedSkill": [
+      "CTI"
+    ],
+    "relatedMaterial": []
+  },
+  "Collaboration Environment": {
+    "relatedSkill": [
+      "Collaboration Environment"
+    ],
+    "relatedMaterial": []
+  },
+  "Communication Manager": {
+    "relatedSkill": [
+      "Communication Manager"
+    ],
+    "relatedMaterial": []
+  },
+  "Communication Server 1000": {
+    "relatedSkill": [
+      "Communication Server 1000"
+    ],
+    "relatedMaterial": []
+  },
+  "Contact Center Monitoring": {
+    "relatedSkill": [
+      "Contact Center Monitoring"
+    ],
+    "relatedMaterial": []
+  },
+  "Context Store Snap-in": {
+    "relatedSkill": [
+      "Context Store Snap-in"
+    ],
+    "relatedMaterial": []
+  },
+  "Control Management": {
+    "relatedSkill": [
+      "Control Management"
+    ],
+    "relatedMaterial": []
+  },
+  "Definity Medium Switch": {
+    "relatedSkill": [
+      "Definity Medium Switch"
+    ],
+    "relatedMaterial": []
+  },
+  "Digital": {
+    "relatedSkill": [
+      "Digital"
+    ],
+    "relatedMaterial": []
+  },
+  "Enterprise SBC": {
+    "relatedSkill": [
+      "Enterprise SBC"
+    ],
+    "relatedMaterial": []
+  },
+  "Equinox": {
+    "relatedSkill": [
+      "Equinox"
+    ],
+    "relatedMaterial": []
+  },
+  "Gateways": {
+    "relatedSkill": [
+      "Gateways"
+    ],
+    "relatedMaterial": []
+  },
+  "IP EndPoints": {
+    "relatedSkill": [
+      "IP EndPoints"
+    ],
+    "relatedMaterial": []
+  },
+  "IP Office": {
+    "relatedSkill": [
+      "IP Office"
+    ],
+    "relatedMaterial": []
+  },
+  "Infinity": {
+    "relatedSkill": [
+      "Infinity"
+    ],
+    "relatedMaterial": []
+  },
+  "Legacy Radvision": {
+    "relatedSkill": [
+      "Legacy Radvision"
+    ],
+    "relatedMaterial": []
+  },
+  "Medial - Germany": {
+    "relatedSkill": [
+      "Medial - Germany"
+    ],
+    "relatedMaterial": []
+  },
+  "Mobile Experience": {
+    "relatedSkill": [
+      "Mobile Experience"
+    ],
+    "relatedMaterial": []
+  },
+  "Modular Messaging": {
+    "relatedSkill": [
+      "Modular Messaging"
+    ],
+    "relatedMaterial": []
+  },
+  "Oceana Solution": {
+    "relatedSkill": [
+      "Oceana Solution"
+    ],
+    "relatedMaterial": []
+  },
+  "Oceana Workspaces": {
+    "relatedSkill": [
+      "Oceana Workspaces"
+    ],
+    "relatedMaterial": []
+  },
+  "Oceanalytics": {
+    "relatedSkill": [
+      "Oceanalytics"
+    ],
+    "relatedMaterial": []
+  },
+  "Officelinx": {
+    "relatedSkill": [
+      "Officelinx"
+    ],
+    "relatedMaterial": [
+      "IX Messaging"
+    ]
+  },
+  "One-X EndPoints": {
+    "relatedSkill": [
+      "One-X EndPoints"
+    ],
+    "relatedMaterial": []
+  },
+  "Partner": {
+    "relatedSkill": [
+      "Partner"
+    ],
+    "relatedMaterial": []
+  },
+  "Presence Server (IPS)": {
+    "relatedSkill": [
+      "Presence Server (IPS)"
+    ],
+    "relatedMaterial": []
+  },
+  "Proactive Contact": {
+    "relatedSkill": [
+      "Proactive Contact"
+    ],
+    "relatedMaterial": []
+  },
+  "Proactive Outreach Manager": {
+    "relatedSkill": [
+      "Proactive Outreach Manager"
+    ],
+    "relatedMaterial": []
+  },
+  "S8300": {
+    "relatedSkill": [
+      "S8300"
+    ],
+    "relatedMaterial": []
+  },
+  "S8500/S8700": {
+    "relatedSkill": [
+      "S8500/S8700"
+    ],
+    "relatedMaterial": []
+  },
+  "SLA Monitor": {
+    "relatedSkill": [
+      "SLA Monitor"
+    ],
+    "relatedMaterial": []
+  },
+  "Secure Access Link": {
+    "relatedSkill": [
+      "Secure Access Link"
+    ],
+    "relatedMaterial": []
+  },
+  "Session Manager (ASM)": {
+    "relatedSkill": [
+      "Session Manager (ASM)"
+    ],
+    "relatedMaterial": []
+  },
+  "Sets": {
+    "relatedSkill": [
+      "Sets"
+    ],
+    "relatedMaterial": []
+  },
+  "System Manager": {
+    "relatedSkill": [
+      "System Manager"
+    ],
+    "relatedMaterial": []
+  },
+  "UCC": {
+    "relatedSkill": [
+      "UCC"
+    ],
+    "relatedMaterial": []
+  },
+  "Unspecified": {
+    "relatedSkill": [
+      "Unspecified"
+    ],
+    "relatedMaterial": []
+  },
+  "Video Conferencing": {
+    "relatedSkill": [
+      "Video Conferencing"
+    ],
+    "relatedMaterial": []
+  },
+  "Voice Portal": {
+    "relatedSkill": [
+      "Voice Portal"
+    ],
+    "relatedMaterial": []
+  },
+  "Wireless IP": {
+    "relatedSkill": [
+      "Wireless IP"
+    ],
+    "relatedMaterial": []
+  },
+  "Witness Call Recorder": {
+    "relatedSkill": [
+      "Witness Call Recorder"
+    ],
+    "relatedMaterial": []
+  },
+  "Workforce Management": {
+    "relatedSkill": [
+      "Workforce Management"
+    ],
+    "relatedMaterial": []
+  }
+}
