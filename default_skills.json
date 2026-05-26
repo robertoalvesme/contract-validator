@@ -14,7 +14,9 @@
     "relatedSkills": [
       "AES VM Ware"
     ],
-    "relatedMaterials": []
+    "relatedMaterials": [
+      "AES"
+    ]
   },
   {
     "skillName": "AES VM Ware",
@@ -39,27 +41,29 @@
   {
     "skillName": "Advanced Application Support",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["CMS","CRM"]
   },
   {
     "skillName": "Agent Desktop",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["ONE-X"]
   },
   {
     "skillName": "Attendant Desktop",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": [
+      "WORKPLACE","ONE-X"
+    ]
   },
   {
     "skillName": "Aura Contact Center",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["AACC"]
   },
   {
     "skillName": "Aura SBC",
     "relatedSkills": ["Enterprise SBC"],
-    "relatedMaterials": []
+    "relatedMaterials": ["SBC"]
   },
   {
     "skillName": "Avaya Agent for Desktop",
@@ -74,7 +78,7 @@
   {
     "skillName": "Avaya Aura Services",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["AADS","WEB GATEWAY"]
   },
   {
     "skillName": "Avaya Converged Platform",
@@ -139,12 +143,12 @@
   {
     "skillName": "CMS",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["CMS"]
   },
   {
     "skillName": "CMS Supervisor",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["CMS"]
   },
   {
     "skillName": "CPaaS",
@@ -164,7 +168,10 @@
   {
     "skillName": "Client Applications",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": [
+      "IX Workplace Client for Windows",
+      "WORKPLACE"
+    ]
   },
   {
     "skillName": "Collaboration Designer Snap-in",
@@ -174,7 +181,7 @@
   {
     "skillName": "Collaboration Environment",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["BREEZE"]
   },
   {
     "skillName": "Collector Snap-in",
@@ -189,7 +196,7 @@
   {
     "skillName": "Communication Manager",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["CM","CC","Communication Manager"]
   },
   {
     "skillName": "Communication Server 1000",
@@ -209,7 +216,7 @@
   {
     "skillName": "Control Management",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["CNTL MGR"]
   },
   {
     "skillName": "Definity G3R",
@@ -234,7 +241,7 @@
   {
     "skillName": "Enterprise SBC",
     "relatedSkills": ["Aura SBC"],
-    "relatedMaterials": []
+    "relatedMaterials": ["SBC"]
   },
   {
     "skillName": "Equinox",
@@ -261,7 +268,10 @@
     "relatedSkills": [],
     "relatedMaterials": [
       "G450",
-      "MEDIA GATEWAY"
+      "MEDIA GATEWAY",
+      "G430",
+      "G650",
+      "MEDIA MODULE"
     ]
   },
   {
@@ -272,12 +282,21 @@
   {
     "skillName": "IP EndPoints",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": [
+      "IP PHONE",
+      "J100",
+      "J129",
+      "J139",
+      "J159",
+      "J169",
+      "J179",
+      "J189"
+    ]
   },
   {
     "skillName": "IP Office",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["IPO"]
   },
   {
     "skillName": "IPO Cloud",
@@ -389,7 +408,7 @@
   {
     "skillName": "Partner",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["ACS"]
   },
   {
     "skillName": "Pod Management",
@@ -414,7 +433,7 @@
   {
     "skillName": "Proactive Outreach Manager",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["POM"]
   },
   {
     "skillName": "Real Time Messaging",
@@ -474,7 +493,7 @@
   {
     "skillName": "Session Manager (ASM)",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["SM"]
   },
   {
     "skillName": "Session Manager (ASM) VM Ware",
@@ -499,7 +518,7 @@
   {
     "skillName": "System Manager",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["ASGM", "SYSTEM MANAGER"]
   },
   {
     "skillName": "System Manager VM Ware",
@@ -539,7 +558,7 @@
   {
     "skillName": "Voice Portal",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["AAEP"]
   },
   {
     "skillName": "Wireless IP",
@@ -554,7 +573,7 @@
   {
     "skillName": "Workforce Management",
     "relatedSkills": ["AWFOS"],
-    "relatedMaterials": []
+    "relatedMaterials": ["WFO", "ACRA "]
   },
   {
     "skillName": "Zang Spaces",
