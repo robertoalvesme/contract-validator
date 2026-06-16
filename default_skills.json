@@ -133,7 +133,7 @@
   {
     "skillName": "CM Services",
     "relatedSkills": [],
-    "relatedMaterials": []
+    "relatedMaterials": ["AMS"]
   },
   {
     "skillName": "CM VM Ware",
