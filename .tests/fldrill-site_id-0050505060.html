@@ -1,0 +1,450 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+	<head>
+		<title>FL Drill Down - Siebel</title>
+		<meta http-equiv="Pragma" content="no-cache" /> 
+        <meta http-equiv="Cache-Control" content="no-cache,no-Store" />
+		<meta content="Microsoft Visual Studio .NET 7.1" name="GENERATOR" />
+		<meta content="Visual Basic .NET 7.1" name="CODE_LANGUAGE" />
+		<meta content="JavaScript" name="vs_defaultClientScript" />
+		<meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema" />
+        <link href="/akuar.css" type="text/css" rel="stylesheet" />
+        <script src="/WebFilters.js" type="text/javascript" language="javascript"></script>
+		<script src="/Common.js" type="text/javascript" language="javascript"></script>
+        <script language="JavaScript" src="/utils/wz_tooltip.js" type="text/javascript"></script>
+	</head>
+	<body onunload="">
+		<form method="post" action="./fldrill.aspx?site_id=0050505060" id="fMain">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUJMjA5ODgxODc1ZGQ5Rm8T8rw1ACAghBmSq7PJoSzlwwpFfXPTEz9x+qeb2Q==" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['fMain'];
+if (!theForm) {
+    theForm = document.fMain;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="606AC414" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdACkbXvffKGmvnBzbTYCjlHf403PnE9YZ6+By4RUvviu3E2FJyTY/xFvJpX7Vi5Oxa198+Ip+idz3gvpbts954mDj4kqridOFe8P9UAkDTWzIG0MsWOGYxbRnWE3RoVJt5X5Gs32Qzh6QMeTaX/puekT1WhyLKijbTEtHGWZJYUOakjnBg7dp8PPNPAH7650j3+uzDGGqnbTGA1GRdPH53kZ2I8zpg2D6H6KX1+eIhHfTXCH7lasVUtcnwTpLrElGCIZfIVjzPyUv728OMEp7zLbYW36lsl54HYt1sPgS2t4ZlUSB5hEtMSS8W4Alby1zt3RYDWblDDeuNzNw73n7pVFtSOXS82e50ToLrRH1cDBUnMjQ7hp7sY9Ng/FMIfWtKBzk1wLVD4pLkO6NcxweAQjhlMnnwuwgr2dGKP+27kMTBNst35Ctjj//mUlhsbUziCEGFi/ip2UMfoCxmEm7YUv1RhBsPQUzIDlDfI83zxnI4sbJ7gDKA+8xA9d5fQoHzx8qJ6ZimHKY22pXEui3TsdQ7eszsO072u9UWXCx8/EPWDnbtBxIAdMl03TLhmofmfubErA1eJU6e/Y+3Zy4/F9lUGf0NSYrcqmnE6fCsDp8faoEzfzYli1MO6jddnUKdfm4Kmg2v2Wzk9JsZEo3XkjBcRdqSt/aA0aiJBsr8bCJ4dLaMyFotTn5GjsfFjanoC57jRIdQmzBS2qc+3jM+PWWAMxEbOheWS/b03q9jtcvgYmrit0iA8j0I2OsBxMo4iWTkk3Y3ieDg1ZHFtOJTIL5tVsP0AbczRlfq+kwx+RL20Z3x4XOxJM0d6WbD5GOZe9Gqpk1lvl0CHoEKVgsSB1iWrcLrZASWXFPwFCYuv/RNb5Zl3eDJQ+02D4QLPQMvZkpUI6WSKCtanvKL88Tdezx" />
+</div>
+			<div id="pnlRepOptions" class="blacktext" style="background-color:Transparent;width:100%;">
+	
+				<table class="tableBorder" cellspacing="0" cellpadding="3" style="width:100%; background-color:#E6E6E6">
+                    <tr>
+                        <td colspan="7">
+                            <table cellspacing="0" cellpadding="3" width="100%">
+                                <tr>
+                                    <td class="headRowV3" colspan="2" style="vertical-align:middle">
+							            <span id="lblHead" style="font-size:14px;">FL Drill Down</span>
+                                    </td>
+                                    <td class="headRowV3" colspan="2" style="text-align:right; vertical-align:middle">
+							            <span id="DocLabel" class="blacktext" style="font-weight:bold;text-decoration:underline;"><a href = "javascript:newWindow('/documentation/files/siebelfldrill.htm')"><font color="white"><u><b>Documentation</b></u></font></a></span>
+						            </td>
+                                    <td class="headRowV3" style="text-align:right; vertical-align:middle">
+							            <select name="ddlLinks" id="ddlLinks" class="blacktext" onchange="CheckGoButton();">
+		<option value="I want to...">I want to...</option>
+		<option value="View Special Handling Notes">View Special Handling Notes</option>
+		<option value="View Assets by Product">View Assets by Product</option>
+		<option value="View Assets with SEIDs">View Assets with SEIDs</option>
+		<option value="View Agreements for">View Agreements for</option>
+		<option value="View Active Contacts">View Active Contacts</option>
+		<option value="View PIE Polling">View PIE Polling</option>
+		<option value="View BP Links">View BP Links</option>
+		<option value="View Co-Del Fulfilled by">View Co-Del Fulfilled by</option>
+		<option value="View CXP End Users">View CXP End Users</option>
+		<option value="View Historical Profile">View Historical Profile</option>
+		<option value="View Service Opportunities">View Service Opportunities</option>
+		<option value="View Linked Articles">View Linked Articles</option>
+
+	</select>
+                                    </td>
+                                    <td id="tdGo" class="headRowV3" align="right" valign="bottom" style="height:23px;width:26px;"></td>
+                                </tr>
+                            </table>
+                        </td>
+					</tr>
+					<tr>
+						<td style="width:10%"><span id="lblFl" class="blacktext" style="font-weight:bold;">0050505060</span></td>
+                        <td style="width:20%"><span id="lblFlName" class="blacktext" style="font-weight:bold;">Bayerisches Landeskriminalamt</span></td>
+                        <td style="width:15%"><span id="lblParentLabel" class="blacktext">Siebel Parent:</span></td>
+						<td style="width:10%"><span id="lblParentId" class="blacktext"><a href='fldrill.aspx?parent_id=7778469191' target='_self'>7778469191</a></span></td>
+                        <td colspan="3" style="width:45%"><span id="lblParentName" class="blacktext">POLIZEI BAYERN HQ</span></td>
+					</tr>
+					<tr>
+                        <td style="width:10%"></td>
+						<td style="width:20%"><span id="lblAddress1" class="blacktext" style="font-weight:bold;">Mailingerstr. 15</span>&nbsp;<span id="lblAddress2" class="blacktext" style="font-weight:bold;"></span></td>
+						<td style="width:15%"><span id="lblLhnLabel" class="blacktext">SAP LHN:</span></td>
+                        <td style="width:10%"><span id="lblLhn" class="blacktext"><a href='fldrill.aspx?lhn=0060021451' target='_self'>0060021451</a></span></td>
+                        <td style="width:10%"><span id="lblLhnName" class="blacktext">Polizei Bayern</span></td>
+                        <td style="width:20%"></td>
+                        <td style="width:15%"></td>
+					</tr>
+					<tr>
+                        <td></td>
+                        <td><span id="lblCity" class="blacktext" style="font-weight:bold;">Muenchen</span></td>
+                        <td><span id="lblCustomerAliasLabel" class="blacktext">Customer Alias:</span></td>
+                        <td colspan="2"><span id="lblCustomerAlias" class="blacktext">POLIZEI BAYERN</span></td>
+                        <td>SDM Name:</td>
+                        <td><span id="lblSdmName" class="blacktext">ALEXANDER SCHMITT</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><span id="lblState" class="blacktext" style="font-weight:bold;"></span></td>
+                        <td><span id="lblCustomerAliasTierLabel" class="blacktext">Customer Alias Tier:</span></td>
+                        <td colspan="2"><span id="lblCustomerAliasTier" class="blacktext">Global Support</span></td>
+                        <td>SFDC Sales Contact:</td>
+                        <td><span id="lblSfdcName" class="blacktext"><a href='https://login.avaya.com/affwebservices/public/saml2sso?SPID=www.successfactors.com/C0000211211P&RelayState=/sf/liveprofile?selected_user=20140285' target='_blank'>ARNE SELLAK</a></span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><span id="lblZip" class="blacktext" style="font-weight:bold;">80636</span></td>
+                        <td>Source:</td>
+                        <td colspan="2"><span id="lblSource" class="blacktext">SAP I</span></td>
+                        <td>CSM/Renewal Specialist (from SFDC):</td>
+                        <td><span id="lblSamName" class="blacktext"></span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><span id="lblCountry" class="blacktext" style="font-weight:bold;">Germany</span></td>
+                        <td>PO Required:</td>
+                        <td colspan="2"><span id="lblPo" class="blacktext">N</span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Region:</td>
+                        <td><span id="lblRegion" class="blacktext">EMEA</span></td>
+                        <td>Credit Risk:</td>
+                        <td colspan="2"><span id="lblCreditRisk" class="blacktext">N</span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Type:</td>
+                        <td><span id="lblSiteType" class="blacktext">Sold-to party</span></td>
+                        <td>Security Restricted:</td>
+                        <td colspan="2"><span id="lblSecurityRestricted" class="blacktext">N</span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Status:</td>
+                        <td><span id="lblActive" class="blacktext">Active</span></td>
+                        <td>Data Security Compliance:</td>
+                        <td colspan="2"><span id="lblDataSecurityCompliance" class="blacktext"></span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Cust Segment:</td>
+                        <td><span id="lblCustSeg" class="blacktext">Member</span></td>
+                        <td>PM Frequency:</td>
+                        <td colspan="2"><span id="lblPmFrequency" class="blacktext">NOT ELIGIBLE</span></td>
+                        
+                    </tr>
+                    <tr>
+                        <td>AOS Account:</td>
+                        <td><span id="lblApcsCust" class="blacktext">N</span></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+				</table>
+                <br />
+                <br />
+                <span id="CapRowsLabel" class="blacktext">Rows: 0</span>&nbsp;|
+                <span id="CapExcelLabel" class="blacktext"><a href = "/ExcelOld.aspx?1"><img src="/images/excel.bmp" width="16" height="18" border="0"></a></span>
+				<span id="CapWordLabel" class="blacktext"><a href = "/Word.aspx?1"><img src="/images/word.bmp" width="16" height="18" border="0"></a></span>
+				<span id="CapPrintLabel" class="blacktext"><a href = "/Print.aspx?1"><img src="/images/print.bmp" width="16" height="18" border="0"></a></span>
+                <div id="pCap">
+		
+                    <table class="tableBorder" width="100%" cellspacing="0">
+                        <tr class="headRowV3">
+                            <td colspan="99" style="text-align:center; border-bottom:solid white 1px">
+                                Open CAPs and CAPs Closed in Last&nbsp;
+                                <select name="dpCapDays" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpCapDays\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpCapDays" class="blacktext">
+			<option value="90">90</option>
+			<option selected="selected" value="365">365</option>
+			<option value="730">730</option>
+
+		</select>
+                                &nbsp;Days
+                            </td>
+                        </tr>
+                        <span id="lCap" class="blacktext"><tr class='headRowV3'><td align='center'>ID</td><td align='center'>Created</td><td align='center'>Status</td><td align='center'>Age (days)</td><td align='center'>Temperature</td><td align='center'>Customer Perception</td><td align='center'>Closed</td></tr></table></span>
+                    </table>
+                
+	</div>
+                <br />
+                <br />
+                <span id="eProjectRowsLabel" class="blacktext">Rows: 0</span>&nbsp;|
+                <span id="eProjectExcelLabel" class="blacktext"><a href = "/ExcelOld.aspx?2"><img src="/images/excel.bmp" width="16" height="18" border="0"></a></span>
+				<span id="eProjectWordLabel" class="blacktext"><a href = "/Word.aspx?2"><img src="/images/word.bmp" width="16" height="18" border="0"></a></span>
+				<span id="eProjectPrintLabel" class="blacktext"><a href = "/Print.aspx?2"><img src="/images/print.bmp" width="16" height="18" border="0"></a></span>
+                <div id="pEProject">
+		
+                    <table class="tableBorder" width="100%" cellspacing="0">
+                        <tr class="headRowV3">
+                            <td colspan="99" style="text-align:center; border-bottom:solid white 1px">eProjects Open or Closed in Last&nbsp;
+                                <select name="dpEProject" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpEProject\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpEProject" class="blacktext">
+			<option selected="selected" value="30">30</option>
+			<option value="90">90</option>
+			<option value="180">180</option>
+
+		</select>
+                                &nbsp;Days
+                            </td>
+                        </tr>
+                        <span id="lEProject" class="blacktext"><tr class='headRowV3'><td align='center'>Project Code</td><td align='center'>Project Status</td><td align='center'>Customer Name</td><td align='center'>Project name</td><td align='center'>Cut Over Date</td><td align='center'>Forecast Date</td><td align='center'>Completed Date</td></tr></table></span>
+                    </table>
+                
+	</div>
+                <br />
+                <br />
+                <span id="OpenRowsLabel" class="blacktext">Rows: 1</span>&nbsp;|
+                <span id="OpenExcelLabel" class="blacktext"><a href = "/ExcelOld.aspx?3"><img src="/images/excel.bmp" width="16" height="18" border="0"></a></span>
+				<span id="OpenWordLabel" class="blacktext"><a href = "/Word.aspx?3"><img src="/images/word.bmp" width="16" height="18" border="0"></a></span>
+				<span id="OpenPrintLabel" class="blacktext"><a href = "/Print.aspx?3"><img src="/images/print.bmp" width="16" height="18" border="0"></a></span>
+                <div id="pOpenSrs">
+		
+                    <table class="tableBorder" width="100%" cellspacing="0">
+                        <tr class="headRowV3">
+                            <td colspan="99" style="text-align:center; border-bottom:solid white 1px">
+                                <select name="dpOpenSource" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpOpenSource\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpOpenSource" class="blacktext">
+			<option selected="selected" value="All">All</option>
+			<option value="Non-Alarm">Non-Alarm</option>
+			<option value="Alarm">Alarm</option>
+
+		</select>&nbsp;Open SRs&nbsp;
+                                <select name="dpOpenClientReturns" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpOpenClientReturns\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpOpenClientReturns" class="blacktext">
+			<option selected="selected" value="Excluding">Excluding</option>
+			<option value="Including">Including</option>
+
+		</select>&nbsp;Client Returns
+                            </td>
+                        </tr> 
+                        <span id="lOpenSrs" class="blacktext"><tr class='headRowV3'><td style='text-align:left; width:1%'></td><td style='text-align:left; width:8%'>SR #</td><td style='text-align:center; width:3%'>Sev</td><td style='text-align:center; width:3%'>Sev Chg</td><td style='text-align:center; width:5%'>Type</td><td style='text-align:center; width:10%'>Status</td><td style='text-align:center; width:3%'>Age</td><td style='text-align:center; display:none'>Age (days)</td><td style='text-align:center; width:3%'>TSCS</td><td style='text-align:center; width:3%; display:none'>TSCS (days)</td><td style='text-align:center; width:3%'>NSD</td><td style='text-align:center; display:none'>NSD (days)</td><td style='text-align:center; width:8%'>Backlog<br/>State</td><td style='text-align:center; width:3%'>MEA?</td><td style='text-align:center; width:5%'>Disp or<br/>Part?</td><td style='text-align:center; width:13%'>Product<br/>Skill</td><td style='text-align:center; width:8%'>FL</td><td style='text-align:center; width:14%'>FL Name</td><td style='text-align:center; width:5%'>Country</td><td style='text-align:center'>SR Owner</td><td style='text-align:center'>Workgroup</td><td style='text-align:center; display:none'>Manager</td><td style='text-align:center; display:none'>SR Description</td><td style='text-align:center; display:none'>Resolution Narrative</td></tr><tr><td class='blacktext' style='text-align:left; background-color:; background-color:#E6E6E6'></td><td class='blacktext' style='text-align:left; background-color:#E6E6E6' nowrap><b><a href='https://report.avaya.com/siebelreports/casedetails.aspx?case_id=1-23090991907' target='_blank'>1-23090991907</a></b></td><td class='blacktext' style='text-align:center; background-color:#E6E6E6'>NSI</td><td style='text-align:center; background-color:#E6E6E6; font-family:Calibri'></td><td class='blacktext' style='text-align:center; background-color:#E6E6E6'>INTERNAL</td><td class='blacktext' style='text-align:center; background-color:#E6E6E6'>ASSIGNED - SERVICE DESK</td><td class='blacktext' style='text-align:center; background-color:#E6E6E6'>350.8d</td><td class='blacktext' style='text-align:center; background-color:#E6E6E6; display:none'>350.78</td><td class='blacktext' style='text-align:center; background-color:#E6E6E6'>350.8d</td><td class='blacktext' style='text-align:center; background-color:#E6E6E6; display:none'>350.78</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>&nbsp;</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6; display:none'>&nbsp;</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>Resolved</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>N</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>N</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>PRESENCE SERVER (IPS)</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'><a href='https://report.avaya.com/siebelreports/fldrill.aspx?site_id=0050505060' target='_blank'>0050505060</a></td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>BAYERISCHES LANDESKRIMINALAMT</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>DE</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'><a href='https://report.avaya.com/siebelreports/employeedrill.aspx?userhandle=SMEITNER'>SMEITNER</a></td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6'>AVAYA PROFESSIONAL SERVICES</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6; display:none'>KOZIC</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6; display:none'>Ticket for technician St. Meitner  - KW27
+Working for the customer on a project</td><td class='blacktext' style='text-align:center; background-color:; background-color:#E6E6E6; display:none'></td></tr></table></span>
+                    </table>
+                
+	</div>
+                * on MEA column means escalated in last 16 hours
+                <br />
+                <br />
+                <span id="ClosedRowsLabel" class="blacktext">Rows: 0</span>&nbsp;|
+                <span id="ClosedExcelLabel" class="blacktext"><a href = "/ExcelOld.aspx?4"><img src="/images/excel.bmp" width="16" height="18" border="0"></a></span>
+				<span id="ClosedWordLabel" class="blacktext"><a href = "/Word.aspx?4"><img src="/images/word.bmp" width="16" height="18" border="0"></a></span>
+				<span id="ClosedPrintLabel" class="blacktext"><a href = "/Print.aspx?4"><img src="/images/print.bmp" width="16" height="18" border="0"></a></span>
+                <div id="pClosedSrs">
+		
+                    <table class="tableBorder" width="100%" cellspacing="0">
+                        <tr class="headRowV3">
+                        <td colspan="99" style="text-align:center; border-bottom:solid white 1px">
+                            <select name="dpClosedSource" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpClosedSource\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpClosedSource" class="blacktext">
+			<option value="All">All</option>
+			<option selected="selected" value="Non-Alarm">Non-Alarm</option>
+			<option value="Alarm">Alarm</option>
+
+		</select>&nbsp;
+                            SRs Closed Last&nbsp;
+                            <select name="dpClosedDays" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpClosedDays\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpClosedDays" class="blacktext">
+			<option value="30">30</option>
+			<option selected="selected" value="90">90</option>
+			<option value="180">180</option>
+
+		</select>
+                            &nbsp;Days
+                        </td>
+                        <span id="lClosedSrs" class="blacktext"><tr class='headRowV3'><td style='text-align:center'>SR #</td><td style='text-align:center'>Sev</td><td style='text-align:center'>Sev Chg</td><td style='text-align:center'>Type</td><td style='text-align:center'>Resolution Code</td><td style='text-align:center; display:none'>Create Date</td><td style='text-align:center; display:none'>Restore Date</td><td style='text-align:center; display:none'>Resolve Date</td><td style='text-align:center'>Close Date</td><td style='text-align:center'>Restore<br />Time</td><td style='text-align:center; display:none'>Restore<br />Time (days)</td><td style='text-align:center'>Resolve<br />Time</td><td style='text-align:center; display:none'>Resolve Time<br />(bus day)</td><td style='text-align:center'>MEA?</td><td style='text-align:center'>Overall CSAT</td><td style='text-align:center'>Product Skill</td><td style='text-align:center'>FL</td><td style='text-align:center'>FL Name</td><td style='text-align:center'>Country</td><td style='text-align:center'>SR Owner</td><td style='text-align:center'>Workgroup</td><td style='text-align:center; display:none'>Manager</td><td style='text-align:center; display:none'>SR Description</td><td style='text-align:center; display:none'>Resolution Narrative</td></tr></table></span>
+                    </table>
+                
+	</div>
+                <br />
+                <br />
+                <span id="PmRowsLabel" class="blacktext">Rows: 0</span>&nbsp;|
+                <span id="PmExcelLabel" class="blacktext"><a href = "/ExcelOld.aspx?5"><img src="/images/excel.bmp" width="16" height="18" border="0"></a></span>
+				<span id="PmWordLabel" class="blacktext"><a href = "/Word.aspx?5"><img src="/images/word.bmp" width="16" height="18" border="0"></a></span>
+				<span id="PmPrintLabel" class="blacktext"><a href = "/Print.aspx?5"><img src="/images/print.bmp" width="16" height="18" border="0"></a></span>
+                <div id="pPm">
+		
+                    <table class="tableBorder" width="100%" cellspacing="0">
+                        <tr class="headRowV3">
+                        <td colspan="15" style="text-align:center; border-bottom:solid white 1px">PM SRs Closed in Last&nbsp;
+                            <select name="dpPmDays" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;dpPmDays\&#39;,\&#39;\&#39;)&#39;, 0)" id="dpPmDays" class="blacktext">
+			<option selected="selected" value="30">30</option>
+			<option value="90">90</option>
+			<option value="180">180</option>
+
+		</select>
+                            &nbsp;Days
+                        </td>
+                        </tr>
+                        <tr class="headRowV3">
+                            <td align="center"><b>SR #</b></td>
+                            <td align="center"><b>Sold To</b></td>
+                            <td align="center"><b>User</b></td>
+                            <td align="center"><b>WrkGrp</b></td>
+                            <td align="center"><b>Status</b></td>
+                            <td align="center"><b>Case Age</b></td>
+                            <td align="center"><b>Country</b></td>
+                            <td align="center"><b>Cust Seg</b></td>
+                            <td align="center"><b>Sol Elem</b></td>
+                            <td align="center"><b>Sev</b></td>
+                            <td align="center"><b>Source</b></td>
+                            <td align="center"><b>Dispatch</b></td>
+                            <td align="center"><b>FL Name</b></td>
+                            <td align="center"><b>Direct/In Support Of</b></td>
+                            <td align="center"><b>Operational Skill</b></td>
+                        </tr>
+                        <span id="lPm" class="blacktext"></table></span>
+                    </table>
+                
+	</div>
+                <br />
+                <br />
+			
+</div>
+        </form>
+	</body>
+    <script type="text/javascript">
+        function CheckGoButton() {
+            var ddlLinks = document.getElementById("ddlLinks");
+            var tdGo = document.getElementById("tdGo");
+
+            if (ddlLinks.value == "I want to...") {
+                tdGo.innerHTML = "";
+            } else if (ddlLinks.value == "View Special Handling Notes") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/flspechand.aspx?fl=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Assets by Product") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/flassets.aspx?fl=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Assets with SEIDs") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/flproductassets.aspx?fl=" + get("site_id") + "&special=withseid' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Agreements for") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/flentitlements.aspx?fl=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Active Contacts") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/flcontacts.aspx?fl=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View PIE Polling") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/details/piepolling.aspx?fl=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View BP Links") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/details/LookupTool.aspx?fl2=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Co-Del Fulfilled by") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/details/LookupTool.aspx?fl4=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View CXP End Users") {
+                if (get("parent_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/details/LookupTool.aspx?parent_account=" + get("parent_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else {
+                    if (get("site_id") != undefined) {
+                        tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/details/LookupTool.aspx?fl5=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                    }
+                }
+            } else if (ddlLinks.value == "View Historical Profile") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/customerprofile.aspx?type=FL&value=" + get("site_id") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("parent_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/customerprofile.aspx?type=Parent&value=" + get("parent_id") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("lhn") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/customerprofile.aspx?type=LHN&value=" + get("lhn") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("matrix_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/customerprofile.aspx?type=MSL&value=" + get("matrix_id") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Service Opportunities") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/siebelreports/servicerecommendations.aspx?site_id=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Linked Articles") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/kmreports/fllinkeddocs.aspx?site_id=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("parent_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/kmreports/fllinkeddocs.aspx?parent_id=" + get("parent_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("lhn") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/kmreports/fllinkeddocs.aspx?lhn=" + get("lhn") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("matrix_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/kmreports/fllinkeddocs.aspx?matrix_id=" + get("matrix_id") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Revenue History") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/pcchannelrevenue.aspx?tbFLs=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("parent_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/pcchannelrevenue.aspx?tbParents=" + get("parent_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("lhn") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/pcchannelrevenue.aspx?tbLHNs=" + get("lhn") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("matrix_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/pcchannelrevenue.aspx?tbMslId=" + get("matrix_id") + "' target='_blank'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            } else if (ddlLinks.value == "View Contract Timeline") {
+                if (get("site_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/contractvalue.aspx?tbFLs=" + get("site_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("parent_id") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/contractvalue.aspx?tbParents=" + get("parent_id") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                } else if (get("lhn") != undefined) {
+                    tdGo.innerHTML = "<a id='aGo' href='https://report.avaya.com/revenuereports/contractvalue.aspx?tbLHNs=" + get("lhn") + "' target='_self'><img src='../images/go_button.png' alt='' /></a>";
+                }
+            }
+        }
+
+        function get(name) {
+            if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+                return decodeURIComponent(name[1]);
+        }
+
+        function Toggle(sId) {
+            var table = document.getElementById(sId);
+            var arrow = document.getElementById("arrow-" + sId);
+
+            if (table.style.display == '') {
+                table.style.display = 'none';
+                arrow.src = "https://report.avaya.com/images/arrow_blue_up.gif";
+            }
+            else {
+                table.style.display = '';
+                arrow.src = "https://report.avaya.com/images/arrow_blue_dn.gif";
+            }
+        }
+
+        function Load() {
+            document.getElementById("ddlLinks").selectedIndex = 0;
+        }
+
+        window.addEventListener ?
+        window.addEventListener("load", Load(), false) :
+        window.attachEvent && window.attachEvent("onload", Load());
+
+    </script>
+</html>
