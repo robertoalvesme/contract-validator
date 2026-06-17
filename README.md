@@ -17,3 +17,11 @@ Remove-Item .\skills.json -Force -ErrorAction SilentlyContinue
 Remove-Item .\cf_debug.log -Force -ErrorAction SilentlyContinue
 
 py -3 -m PyInstaller --clean --noconfirm --noconsole --onefile --add-data "default_skills.json;." app.py
+
+
+
+#Somente Rodar
+## Instalar
+py -3 -m pip install customtkinter selenium
+## Executar
+py -3 app.py
