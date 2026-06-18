@@ -1,0 +1,20 @@
+services:
+  contract-finder:
+    build:
+      # Context is project root so Dockerfile can access default_skills.json
+      context: ..
+      dockerfile: web/Dockerfile
+    image: contract-finder:latest
+    ports:
+      - "3000:8080"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/skills"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
