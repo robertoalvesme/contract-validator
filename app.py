@@ -7,27 +7,29 @@ import time
 import re
 from urllib.parse import quote
 import customtkinter as ctk
+import tkinter as tk
 from tkinter import messagebox
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-# Global visual configuration
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Resource / data helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
 def get_resource_path(relative_path):
-    """Returns the absolute path to the resource, handling PyInstaller's Temp folder."""
     try:
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-def load_skills_data():
-    """Loads the bundled default_skills.json only."""
-    default_path = get_resource_path("default_skills.json")
 
+def load_skills_data():
+    default_path = get_resource_path("default_skills.json")
     try:
         with open(default_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -37,320 +39,759 @@ def load_skills_data():
             with open(fallback_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception:
-            raise RuntimeError(f"Unable to load default_skills.json from '{default_path}' or '{fallback_path}': {e}")
-
+            raise RuntimeError(
+                f"Unable to load default_skills.json from '{default_path}' or '{fallback_path}': {e}"
+            )
     if isinstance(data, dict):
-        new_data = []
-        for key, value in data.items():
-            new_item = {
-                "skillName": key,
-                "relatedSkills": value.get("relatedSkill", []),
-                "relatedMaterials": value.get("relatedMaterial", [])
+        return [
+            {
+                "skillName": k,
+                "relatedSkills": v.get("relatedSkill", []),
+                "relatedMaterials": v.get("relatedMaterial", []),
             }
-            new_data.append(new_item)
-        return new_data
-
+            for k, v in data.items()
+        ]
     return data
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# UI helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _section_label(parent, text: str):
+    ctk.CTkLabel(
+        parent, text=text.upper(),
+        font=ctk.CTkFont(size=10, weight="bold"),
+        text_color="#6272a4",
+    ).pack(anchor="w", padx=16, pady=(12, 3))
+
+
+def _divider(parent):
+    ctk.CTkFrame(parent, height=1, fg_color="#252540").pack(fill="x", padx=12, pady=4)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Searchable combo-box
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SearchableComboBox(ctk.CTkFrame):
+    """
+    Entry widget with a live-filtered floating listbox.
+    Supports mouse-wheel scroll, keyboard navigation (↓ / Enter / Esc).
+    API is compatible with CTkComboBox: .get(), .set(), .configure(values=, state=).
+    """
+
+    _ITEM_H  = 22
+    _MAX_VIS = 12
+
+    def __init__(self, parent, values=None, placeholder="Type to filter…", **kwargs):
+        super().__init__(parent, fg_color="transparent", **kwargs)
+        self._all_values = sorted(values or [])
+        self._popup  = None
+        self._lb     = None          # tk.Listbox inside popup
+        self._disabled = False
+
+        self._var = tk.StringVar()
+        self._var.trace_add("write", self._on_text_change)
+
+        self._entry = ctk.CTkEntry(
+            self, textvariable=self._var,
+            placeholder_text=placeholder, height=36,
+        )
+        self._entry.pack(fill="x", expand=True)
+
+        self._entry.bind("<FocusIn>",  self._show_popup)
+        self._entry.bind("<FocusOut>", self._schedule_hide)
+        self._entry.bind("<Down>",     self._focus_list)
+        self._entry.bind("<Escape>",   self._hide_popup)
+        self._entry.bind("<Return>",   self._pick_first)
+
+    # ── public API ────────────────────────────────────────────────────────────
+
+    def get(self) -> str:
+        return self._var.get()
+
+    def set(self, value: str):
+        self._var.set(value)
+
+    def configure(self, **kwargs):
+        if "values" in kwargs:
+            self._all_values = sorted(kwargs.pop("values"))
+            if self._popup:
+                self._refresh_list()
+        if "state" in kwargs:
+            state = kwargs.pop("state")
+            self._disabled = (state == "disabled")
+            self._entry.configure(state=state)
+        if kwargs:
+            super().configure(**kwargs)
+
+    # ── popup lifecycle ───────────────────────────────────────────────────────
+
+    def _show_popup(self, _=None):
+        if self._disabled or (self._popup and self._popup.winfo_exists()):
+            return
+        self._build_popup()
+
+    def _build_popup(self):
+        self._popup = tk.Toplevel(self)
+        self._popup.wm_overrideredirect(True)
+        self._popup.configure(bg="#0d0d1a")
+
+        border = tk.Frame(self._popup, bg="#3c4070", bd=0)
+        border.pack(fill="both", expand=True, padx=1, pady=1)
+
+        sb = tk.Scrollbar(border, orient="vertical", width=10,
+                          bg="#2b2b3b", troughcolor="#0d0d1a", activebackground="#3a3a5a")
+        self._lb = tk.Listbox(
+            border,
+            yscrollcommand=sb.set,
+            bg="#16162a", fg="#cdd6f4",
+            selectbackground="#1f538d", selectforeground="#ffffff",
+            activestyle="none",
+            borderwidth=0, highlightthickness=0,
+            font=("Segoe UI", 10),
+        )
+        sb.config(command=self._lb.yview)
+        self._lb.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+
+        self._lb.bind("<MouseWheel>",
+                      lambda e: self._lb.yview_scroll(-int(e.delta / 120), "units"))
+        self._lb.bind("<<ListboxSelect>>", self._on_select)
+        self._lb.bind("<Return>",          self._on_select)
+        self._lb.bind("<FocusOut>",        self._schedule_hide)
+        self._lb.bind("<Escape>",          self._hide_popup)
+
+        self._refresh_list()
+        self._position_popup()
+
+    def _position_popup(self):
+        if not (self._popup and self._popup.winfo_exists()):
+            return
+        self.update_idletasks()
+        x = self.winfo_rootx()
+        y = self.winfo_rooty() + self.winfo_height() + 2
+        w = self.winfo_width()
+        count = self._lb.size() if self._lb else 0
+        h = min(self._MAX_VIS, max(1, count)) * self._ITEM_H + 8
+        self._popup.geometry(f"{w}x{h}+{x}+{y}")
+        self._popup.lift()
+
+    def _refresh_list(self):
+        if not (self._popup and self._popup.winfo_exists()):
+            return
+        query = self._var.get().lower()
+        filtered = [v for v in self._all_values if query in v.lower()]
+        self._lb.delete(0, "end")
+        for v in filtered:
+            self._lb.insert("end", v)
+        self._position_popup()
+
+    def _hide_popup(self, _=None):
+        if self._popup and self._popup.winfo_exists():
+            self._popup.destroy()
+        self._popup = None
+        self._lb = None
+
+    def _schedule_hide(self, _=None):
+        self.after(180, self._check_hide)
+
+    def _check_hide(self):
+        try:
+            if self._lb and self.focus_get() == self._lb:
+                return
+        except Exception:
+            pass
+        self._hide_popup()
+
+    # ── interactions ──────────────────────────────────────────────────────────
+
+    def _on_text_change(self, *_):
+        if self._popup and self._popup.winfo_exists():
+            self._refresh_list()
+        elif not self._disabled:
+            self._show_popup()
+
+    def _on_select(self, _=None):
+        if self._lb:
+            sel = self._lb.curselection()
+            if sel:
+                self._var.set(self._lb.get(sel[0]))
+        self._hide_popup()
+        self._entry.focus_set()
+
+    def _focus_list(self, _=None):
+        if not (self._popup and self._popup.winfo_exists()):
+            self._build_popup()
+        if self._lb and self._lb.size():
+            self._lb.focus_set()
+            self._lb.selection_set(0)
+            self._lb.activate(0)
+
+    def _pick_first(self, _=None):
+        if self._lb and self._lb.size():
+            self._var.set(self._lb.get(0))
+        self._hide_popup()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main application
+# ─────────────────────────────────────────────────────────────────────────────
+
 class ContractExtractorApp(ctk.CTk):
+
     def __init__(self):
         super().__init__()
         self.title("Avaya Contract Finder")
-        self.geometry("1000x650")
+        self.geometry("1120x700")
+        self.minsize(920, 580)
 
         self.raw_skills_data = load_skills_data()
-        self.skills_list, self.products_list, self.skill_to_related_map = self.build_search_data()
-        self.stop_event = threading.Event()
-
+        self.skills_list, self.products_list, self.skill_to_related_map = self._build_search_data()
+        self.stop_event  = threading.Event()
         self.stored_user = ""
         self.stored_pass = ""
+        self._result_count = 0
 
         self.login_screen()
 
-    def build_search_data(self):
-        """Builds lists of skills and products, and a map for related skills. Handles both old and new key names for robustness."""
-        skills = set()
-        products = set()
-        skill_map = {}
+    # ── data ──────────────────────────────────────────────────────────────────
 
-        def _normalize_product_name(p):
-            """Normalize product name: ensure it's a string, strip whitespace and collapse internal spaces.
-            Return None for non-usable values."""
+    def _build_search_data(self):
+        skills, products, skill_map = set(), set(), {}
+
+        def _norm(p):
             if not isinstance(p, str):
                 return None
-            p = p.strip()
-            if not p:
-                return None
-            # collapse multiple spaces into one
-            p = re.sub(r"\s+", " ", p)
-            return p
+            p = re.sub(r"\s+", " ", p.strip())
+            return p or None
 
         for item in self.raw_skills_data:
-            main_skill = item.get("skillName")
-            if not main_skill:
+            name = item.get("skillName")
+            if not name:
                 continue
+            skills.add(name)
+            related = {
+                rs for rs in (item.get("relatedSkills", []) or item.get("relatedSkill", []))
+                if isinstance(rs, str) and rs.strip()
+            }
+            related.add(name)
+            skill_map[name] = sorted(related)
+            mats = item.get("relatedMaterials", []) or item.get("relatedMaterial", [])
+            for m in (mats if isinstance(mats, (list, tuple)) else [mats]):
+                n = _norm(m)
+                if n:
+                    products.add(n)
 
-            skills.add(main_skill)
+        return sorted(skills), sorted(products), skill_map
 
-            # Handle both "relatedSkills" (new) and "relatedSkill" (old)
-            related_skills_list = item.get("relatedSkills", []) or item.get("relatedSkill", [])
-            # keep only truthy string values
-            related = set([rs for rs in related_skills_list if isinstance(rs, str) and rs.strip()])
-            related.add(main_skill)  # Include the main skill itself
-            skill_map[main_skill] = sorted(list(related))
-
-            # Handle both "relatedMaterials" (new) and "relatedMaterial" (old)
-            materials_list = item.get("relatedMaterials", []) or item.get("relatedMaterial", [])
-            # materials_list may be a list or a single string; handle both
-            if isinstance(materials_list, (list, tuple)):
-                for product in materials_list:
-                    norm = _normalize_product_name(product)
-                    if norm:
-                        products.add(norm)
-            else:
-                norm = _normalize_product_name(materials_list)
-                if norm:
-                    products.add(norm)
-
-        return sorted(list(skills)), sorted(list(products)), skill_map
+    # ── screens ───────────────────────────────────────────────────────────────
 
     def clear_screen(self):
-        for widget in self.winfo_children():
-            widget.destroy()
+        for w in self.winfo_children():
+            w.destroy()
+
+    # ── login ─────────────────────────────────────────────────────────────────
 
     def login_screen(self):
         self.clear_screen()
-        login_frame = ctk.CTkFrame(self, width=400, height=350)
-        login_frame.place(relx=0.5, rely=0.5, anchor="center")
-        ctk.CTkLabel(login_frame, text="System Access", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(30, 20))
-        self.entry_user = ctk.CTkEntry(login_frame, placeholder_text="Username / Handle", width=250)
-        self.entry_user.pack(pady=10)
-        self.entry_password = ctk.CTkEntry(login_frame, placeholder_text="Password", show="*", width=250)
-        self.entry_password.pack(pady=10)
-        ctk.CTkButton(login_frame, text="Login", command=self.validate_login, width=250).pack(pady=30)
+        card = ctk.CTkFrame(self, width=400, height=380, corner_radius=18)
+        card.place(relx=0.5, rely=0.5, anchor="center")
+        card.pack_propagate(False)
+
+        ctk.CTkLabel(
+            card, text="Avaya Contract Finder",
+            font=ctk.CTkFont(size=22, weight="bold"),
+        ).pack(pady=(36, 4))
+        ctk.CTkLabel(
+            card, text="Sign in to continue",
+            font=ctk.CTkFont(size=12), text_color="gray",
+        ).pack(pady=(0, 28))
+
+        self.entry_user = ctk.CTkEntry(
+            card, placeholder_text="Username / Handle", width=290, height=40)
+        self.entry_user.pack(pady=6)
+
+        self.entry_password = ctk.CTkEntry(
+            card, placeholder_text="Password", show="*", width=290, height=40)
+        self.entry_password.pack(pady=6)
+        self.entry_password.bind("<Return>", lambda _: self.validate_login())
+
+        ctk.CTkButton(
+            card, text="Login", command=self.validate_login,
+            width=290, height=42,
+            font=ctk.CTkFont(size=14, weight="bold"),
+        ).pack(pady=28)
 
     def validate_login(self):
         user = self.entry_user.get().strip()
-        password = self.entry_password.get().strip()
-        if user and password:
+        pw   = self.entry_password.get().strip()
+        if user and pw:
             self.stored_user = user
-            self.stored_pass = password
+            self.stored_pass = pw
             self.main_screen()
         else:
             messagebox.showwarning("Warning", "Please enter both username and password.")
 
+    # ── main screen ───────────────────────────────────────────────────────────
+
     def main_screen(self):
         self.clear_screen()
-        sidebar = ctk.CTkFrame(self, width=320, corner_radius=0)
-        sidebar.pack(side="left", fill="y", padx=0, pady=0)
-        header_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
-        header_frame.pack(fill="x", pady=(10, 5), padx=10)
-        ctk.CTkLabel(header_frame, text=f"User: {self.stored_user}", text_color="gray", font=ctk.CTkFont(size=11)).pack(side="left")
-        ctk.CTkButton(header_frame, text="Logout", width=60, height=24, command=self.login_screen).pack(side="right")
-        ctk.CTkLabel(sidebar, text="Search Parameters", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=(10, 20), padx=20)
-        
-        ctk.CTkLabel(sidebar, text="FL (Customer):").pack(anchor="w", padx=20)
-        self.entry_fl = ctk.CTkEntry(sidebar, placeholder_text="e.g., 0051849434")
-        self.entry_fl.pack(fill="x", padx=20, pady=(0, 15))
+        self._result_count = 0
 
-        # --- Search Type ---
+        # ── sidebar ───────────────────────────────────────────────────────────
+        sidebar = ctk.CTkFrame(self, width=295, corner_radius=0, fg_color="#13131f")
+        sidebar.pack(side="left", fill="y")
+        sidebar.pack_propagate(False)
+
+        # Header strip
+        hdr = ctk.CTkFrame(sidebar, fg_color="#1c1c2e", corner_radius=0, height=50)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        ctk.CTkLabel(
+            hdr, text="Contract Finder",
+            font=ctk.CTkFont(size=15, weight="bold"), text_color="#7aa2f7",
+        ).pack(side="left", padx=16)
+        ctk.CTkButton(
+            hdr, text="Logout", width=64, height=28,
+            fg_color="#252540", hover_color="#35355a",
+            font=ctk.CTkFont(size=11),
+            command=self.login_screen,
+        ).pack(side="right", padx=10)
+        ctk.CTkLabel(
+            hdr, text=self.stored_user,
+            font=ctk.CTkFont(size=10), text_color="#6272a4",
+        ).pack(side="right", padx=4)
+
+        # ── FL ────────────────────────────────────────────────────────────────
+        _section_label(sidebar, "Customer FL")
+        self.entry_fl = ctk.CTkEntry(sidebar, placeholder_text="e.g. 0051849434", height=38)
+        self.entry_fl.pack(fill="x", padx=14, pady=(0, 6))
+
+        self.search_parent_var = ctk.IntVar(value=0)
+        ctk.CTkCheckBox(
+            sidebar, text="Also search Parent FLs",
+            variable=self.search_parent_var,
+            font=ctk.CTkFont(size=12),
+        ).pack(anchor="w", padx=16, pady=(0, 4))
+
+        _divider(sidebar)
+
+        # ── Search type ───────────────────────────────────────────────────────
+        _section_label(sidebar, "Search Type")
         self.search_type = ctk.StringVar(value="Skill")
-        ctk.CTkLabel(sidebar, text="Search Type:").pack(anchor="w", padx=20)
-        radio_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
-        radio_frame.pack(fill="x", padx=20, pady=(0, 10))
-        ctk.CTkRadioButton(radio_frame, text="Skill", variable=self.search_type, value="Skill", command=self.update_search_options).pack(side="left")
-        ctk.CTkRadioButton(radio_frame, text="Product", variable=self.search_type, value="Product", command=self.update_search_options).pack(side="left", padx=20)
+        radio_row = ctk.CTkFrame(sidebar, fg_color="transparent")
+        radio_row.pack(fill="x", padx=14, pady=(0, 8))
+        ctk.CTkRadioButton(
+            radio_row, text="Skill", variable=self.search_type, value="Skill",
+            command=self._update_search_options,
+        ).pack(side="left")
+        ctk.CTkRadioButton(
+            radio_row, text="Product", variable=self.search_type, value="Product",
+            command=self._update_search_options,
+        ).pack(side="left", padx=24)
 
-        # --- Dropdown ---
-        self.combo_term = ctk.CTkComboBox(sidebar, state="readonly")
-        self.combo_term.pack(fill="x", padx=20, pady=(0, 10))
+        # Container that holds the combo + optional custom product widgets
+        # so they always stay in the correct visual position
+        self._search_content = ctk.CTkFrame(sidebar, fg_color="transparent")
+        self._search_content.pack(fill="x")
 
-        # --- Custom Product Search ---
+        self.combo_term = SearchableComboBox(
+            self._search_content,
+            values=self.skills_list,
+            placeholder="Type to filter skills…",
+        )
+        self.combo_term.pack(fill="x", padx=14, pady=(0, 6))
+        if self.skills_list:
+            self.combo_term.set(self.skills_list[0])
+
         self.custom_product_var = ctk.IntVar(value=0)
-        self.check_custom_product = ctk.CTkCheckBox(sidebar, text="Search for custom product", variable=self.custom_product_var, command=self.toggle_custom_product)
-        self.entry_custom_product = ctk.CTkEntry(sidebar, placeholder_text="Enter custom product name")
+        self.check_custom = ctk.CTkCheckBox(
+            self._search_content, text="Enter custom product name",
+            variable=self.custom_product_var,
+            command=self._toggle_custom,
+            font=ctk.CTkFont(size=12),
+        )
+        self.entry_custom = ctk.CTkEntry(
+            self._search_content, placeholder_text="Product name…", height=36)
+        # check_custom and entry_custom are packed/unpacked by _update_search_options
 
-        self.update_search_options() # Initial setup
+        _divider(sidebar)
 
-        ctk.CTkLabel(sidebar, text="Version (e.g., 8, 9, 10):").pack(anchor="w", padx=20)
-        self.entry_version = ctk.CTkEntry(sidebar, placeholder_text="Optional")
-        self.entry_version.pack(fill="x", padx=20, pady=(0, 25))
-        
-        self.btn_start = ctk.CTkButton(sidebar, text="Start Search", command=self.start_automation, fg_color="#28a745", hover_color="darkgreen")
-        self.btn_start.pack(fill="x", padx=20, pady=5)
-        self.btn_stop = ctk.CTkButton(sidebar, text="Stop Search", command=self.stop_automation, fg_color="#dc3545", hover_color="darkred", state="disabled")
-        self.btn_stop.pack(fill="x", padx=20, pady=5)
-        self.lbl_status = ctk.CTkLabel(sidebar, text="Waiting...", text_color="gray")
-        self.lbl_status.pack(pady=20, padx=20)
-        
-        main_area = ctk.CTkFrame(self, fg_color="transparent")
-        main_area.pack(side="right", fill="both", expand=True, padx=10, pady=10)
-        ctk.CTkLabel(main_area, text="Contracts Found", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
-        self.scroll_results = ctk.CTkScrollableFrame(main_area)
-        self.scroll_results.pack(fill="both", expand=True)
+        # ── Version filter ────────────────────────────────────────────────────
+        _section_label(sidebar, "Version Filter")
+        self.entry_version = ctk.CTkEntry(
+            sidebar, placeholder_text="e.g. 8, 9, 10  (optional)", height=36)
+        self.entry_version.pack(fill="x", padx=14, pady=(0, 4))
 
-    def update_search_options(self):
-        search_mode = self.search_type.get()
-        if search_mode == "Skill":
-            self.combo_term.configure(values=self.skills_list)
+        _divider(sidebar)
+
+        # ── Action buttons ────────────────────────────────────────────────────
+        self.btn_start = ctk.CTkButton(
+            sidebar, text="▶  Start Search", command=self.start_automation,
+            fg_color="#1a5c35", hover_color="#22764a",
+            font=ctk.CTkFont(size=13, weight="bold"), height=42,
+        )
+        self.btn_start.pack(fill="x", padx=14, pady=(10, 4))
+
+        self.btn_stop = ctk.CTkButton(
+            sidebar, text="■  Stop Search", command=self.stop_automation,
+            fg_color="#7a1a2e", hover_color="#962336",
+            font=ctk.CTkFont(size=13, weight="bold"), height=42, state="disabled",
+        )
+        self.btn_stop.pack(fill="x", padx=14, pady=4)
+
+        self.btn_clear = ctk.CTkButton(
+            sidebar, text="✕  Clear Results", command=self.clear_search,
+            fg_color="#252540", hover_color="#35355a",
+            font=ctk.CTkFont(size=12), height=36,
+        )
+        self.btn_clear.pack(fill="x", padx=14, pady=(4, 6))
+
+        # Status label
+        self.lbl_status = ctk.CTkLabel(
+            sidebar, text="Ready",
+            text_color="#6272a4", font=ctk.CTkFont(size=11),
+            wraplength=260,
+        )
+        self.lbl_status.pack(padx=14, pady=8)
+
+        # ── Results area ──────────────────────────────────────────────────────
+        main_area = ctk.CTkFrame(self, fg_color="#0e0e1a", corner_radius=0)
+        main_area.pack(side="right", fill="both", expand=True)
+
+        results_bar = ctk.CTkFrame(main_area, fg_color="#1a1a2e", corner_radius=0, height=46)
+        results_bar.pack(fill="x")
+        results_bar.pack_propagate(False)
+        self.lbl_result_count = ctk.CTkLabel(
+            results_bar, text="No results yet",
+            font=ctk.CTkFont(size=13, weight="bold"), text_color="#a0b4d0",
+        )
+        self.lbl_result_count.pack(side="left", padx=20, pady=12)
+
+        self.scroll_results = ctk.CTkScrollableFrame(main_area, fg_color="#0e0e1a")
+        self.scroll_results.pack(fill="both", expand=True, padx=6, pady=6)
+
+    # ── search option helpers ─────────────────────────────────────────────────
+
+    def _update_search_options(self):
+        mode = self.search_type.get()
+        if mode == "Skill":
+            self.combo_term.configure(values=self.skills_list, state="normal")
             self.combo_term.set(self.skills_list[0] if self.skills_list else "")
-            self.check_custom_product.pack_forget()
-            self.entry_custom_product.pack_forget()
-        else: # Product
-            self.combo_term.configure(values=self.products_list)
+            self.check_custom.pack_forget()
+            self.entry_custom.pack_forget()
+        else:
+            self.combo_term.configure(values=self.products_list, state="normal")
             self.combo_term.set(self.products_list[0] if self.products_list else "")
-            self.check_custom_product.pack(anchor="w", padx=20, pady=(5,0))
-            self.toggle_custom_product() # Show/hide custom entry based on checkbox
+            self.check_custom.pack(anchor="w", padx=16, pady=(0, 4))
+            self._toggle_custom()
 
-    def toggle_custom_product(self):
-        if self.custom_product_var.get() == 1:
-            self.entry_custom_product.pack(fill="x", padx=20, pady=(5, 10))
+    def _toggle_custom(self):
+        if self.custom_product_var.get():
+            self.entry_custom.pack(fill="x", padx=14, pady=(4, 6))
             self.combo_term.configure(state="disabled")
         else:
-            self.entry_custom_product.pack_forget()
-            self.combo_term.configure(state="readonly")
+            self.entry_custom.pack_forget()
+            self.combo_term.configure(state="normal")
+
+    # ── results ───────────────────────────────────────────────────────────────
 
     def clear_results(self):
-        for widget in self.scroll_results.winfo_children():
-            widget.destroy()
+        for w in self.scroll_results.winfo_children():
+            w.destroy()
 
-    def start_automation(self):
-        fl = self.entry_fl.get().strip()
-        search_mode = self.search_type.get()
-        version_input = self.entry_version.get().strip()
-        
-        search_term = ""
-        if search_mode == "Product" and self.custom_product_var.get() == 1:
-            search_term = self.entry_custom_product.get().strip()
-        else:
-            search_term = self.combo_term.get()
-
-        if not fl or not search_term:
-            messagebox.showwarning("Warning", "Please enter the FL and a search term.")
-            return
-
+    def clear_search(self):
         self.clear_results()
-        version_search = f"R{version_input}" if version_input else ""
-        
-        self.btn_start.configure(state="disabled")
-        self.btn_stop.configure(state="normal")
-        self.lbl_status.configure(text="Starting process...", text_color="orange")
-        self.stop_event.clear()
+        self._result_count = 0
+        self.lbl_result_count.configure(text="No results yet")
+        self.lbl_status.configure(text="Ready", text_color="#6272a4")
 
-        threading.Thread(target=self.run_bot, args=(fl, search_mode, search_term, version_search), daemon=True).start()
+    def add_result_item(self, fl, skill, contract_num, description, url_contract):
+        self._result_count += 1
+        s = "s" if self._result_count != 1 else ""
+        self.lbl_result_count.configure(text=f"{self._result_count} contract{s} found")
 
-    def stop_automation(self):
-        self.stop_event.set()
-        self.lbl_status.configure(text="Search stopping...", text_color="red")
-        self.btn_stop.configure(state="disabled")
+        clipboard_text = (
+            f"Contract Found\n"
+            f"FL: {fl}\n"
+            f"Skill: {skill}\n"
+            f"Asset Number: {contract_num}\n"
+            f"Contract URL:\n{url_contract}"
+        )
 
-    def add_result_item(self, skill, contract_num, description, url_contract):
-        clipboard_text = (f"Contract Found\nSkill: {skill}\nAsset Number:  {contract_num}\nContract URL:\n{url_contract}")
-        item_frame = ctk.CTkFrame(self.scroll_results, fg_color="#2b2b2b")
-        item_frame.pack(fill="x", pady=5, padx=5)
-        info_label = ctk.CTkLabel(item_frame, text=f"Asset: {contract_num} | Mat: {description}", justify="left", anchor="w", wraplength=450)
-        info_label.pack(side="left", padx=10, pady=10, fill="x", expand=True)
-        btn_copy = ctk.CTkButton(item_frame, text="Copy", width=70, command=lambda t=clipboard_text: self.copy_to_clipboard(t))
-        btn_copy.pack(side="right", padx=5, pady=10)
-        btn_link = ctk.CTkButton(item_frame, text="Open Link", width=80, fg_color="#1f538d", command=lambda u=url_contract: webbrowser.open(u))
-        btn_link.pack(side="right", padx=5, pady=10)
+        # Card
+        card = ctk.CTkFrame(self.scroll_results, fg_color="#16162a", corner_radius=10)
+        card.pack(fill="x", pady=3, padx=4)
+
+        # Blue left accent bar
+        ctk.CTkFrame(card, width=4, fg_color="#1f538d", corner_radius=3).pack(
+            side="left", fill="y", padx=(8, 0), pady=10)
+
+        # Info block (expands)
+        info = ctk.CTkFrame(card, fg_color="transparent")
+        info.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+        # Row 1 – FL badge + skill name
+        r1 = ctk.CTkFrame(info, fg_color="transparent")
+        r1.pack(fill="x", anchor="w")
+        ctk.CTkLabel(
+            r1, text=f"  FL {fl}  ",
+            fg_color="#1a3a5c", corner_radius=4,
+            font=ctk.CTkFont(size=10, weight="bold"),
+            text_color="#7aa2f7", height=22,
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            r1, text=skill,
+            font=ctk.CTkFont(size=11), text_color="#8892a4", anchor="w",
+        ).pack(side="left")
+
+        # Row 2 – asset number + material description
+        r2 = ctk.CTkFrame(info, fg_color="transparent")
+        r2.pack(fill="x", anchor="w", pady=(4, 0))
+        ctk.CTkLabel(
+            r2, text=f"Asset  #{contract_num}",
+            font=ctk.CTkFont(size=12, weight="bold"), text_color="#e2e8f0",
+        ).pack(side="left", padx=(0, 12))
+        ctk.CTkLabel(
+            r2, text=description,
+            font=ctk.CTkFont(size=11), text_color="#6272a4",
+            anchor="w", wraplength=420,
+        ).pack(side="left")
+
+        # Buttons (right side)
+        btns = ctk.CTkFrame(card, fg_color="transparent")
+        btns.pack(side="right", padx=10, pady=10)
+        ctk.CTkButton(
+            btns, text="Open ↗", width=88, height=32,
+            fg_color="#1f538d", hover_color="#2863a8",
+            font=ctk.CTkFont(size=11),
+            command=lambda u=url_contract: webbrowser.open(u),
+        ).pack(pady=(0, 5))
+        ctk.CTkButton(
+            btns, text="Copy", width=88, height=32,
+            fg_color="#252540", hover_color="#35355a",
+            font=ctk.CTkFont(size=11),
+            command=lambda t=clipboard_text: self.copy_to_clipboard(t),
+        ).pack()
 
     def copy_to_clipboard(self, text):
         self.clipboard_clear()
         self.clipboard_append(text)
         messagebox.showinfo("Copied", "Contract data copied to clipboard!")
 
-    def run_bot(self, fl, search_mode, search_term, version_search):
+    # ── search control ────────────────────────────────────────────────────────
+
+    def start_automation(self):
+        fl   = self.entry_fl.get().strip()
+        mode = self.search_type.get()
+        ver  = self.entry_version.get().strip()
+        search_parent = self.search_parent_var.get() == 1
+
+        term = (
+            self.entry_custom.get().strip()
+            if mode == "Product" and self.custom_product_var.get()
+            else self.combo_term.get().strip()
+        )
+
+        if not fl or not term:
+            messagebox.showwarning("Warning", "Please fill in the FL and a search term.")
+            return
+
+        self.clear_results()
+        self._result_count = 0
+        self.lbl_result_count.configure(text="Searching…")
+        version_search = f"R{ver}" if ver else ""
+
+        self.btn_start.configure(state="disabled")
+        self.btn_stop.configure(state="normal")
+        self.lbl_status.configure(text="Starting…", text_color="orange")
+        self.stop_event.clear()
+
+        threading.Thread(
+            target=self.run_bot,
+            args=(fl, mode, term, version_search, search_parent),
+            daemon=True,
+        ).start()
+
+    def stop_automation(self):
+        self.stop_event.set()
+        self.lbl_status.configure(text="Stopping…", text_color="#e74c3c")
+        self.btn_stop.configure(state="disabled")
+
+    # ── bot / scraping ────────────────────────────────────────────────────────
+
+    def _get_active_contract_links(self, driver, url):
+        try:
+            driver.get(url)
+        except Exception:
+            pass
+        time.sleep(8)
+        links = []
+        try:
+            for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                cols = row.find_elements(By.TAG_NAME, "td")
+                if len(cols) >= 8 and "Active" in cols[7].text.strip():
+                    try:
+                        links.append(
+                            cols[2].find_element(By.TAG_NAME, "a").get_attribute("href")
+                        )
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"Error reading contract table: {e}")
+        return links
+
+    def _get_parent_active_fls(self, driver, fl, u_safe, p_safe):
+        url_drill = f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/fldrill.aspx?site_id={fl}"
+        try:
+            driver.get(url_drill)
+        except Exception:
+            pass
+        time.sleep(5)
+
+        parent_id = ""
+        try:
+            parent_id = driver.find_element(By.ID, "lblParentId").text.strip()
+        except Exception as e:
+            print(f"lblParentId not found for FL {fl}: {e}")
+            return []
+
+        if not parent_id:
+            return []
+
+        self.after(0, lambda pid=parent_id: self.lbl_status.configure(
+            text=f"Parent: {pid}\nLoading siblings…", text_color="orange"
+        ))
+
+        url_lookup = (
+            f"https://{u_safe}:{p_safe}@report.avaya.com"
+            f"/details/LookupTool.aspx?siebel_parent={parent_id}"
+        )
+        try:
+            driver.get(url_lookup)
+        except Exception:
+            pass
+        time.sleep(5)
+
+        active_fls = []
+        try:
+            for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                cols = row.find_elements(By.TAG_NAME, "td")
+                if len(cols) >= 9 and cols[8].text.strip().lower() == "active":
+                    sid = cols[0].text.strip()
+                    if sid and sid != fl:
+                        active_fls.append(sid)
+        except Exception as e:
+            print(f"Error reading LookupTool: {e}")
+
+        return active_fls
+
+    def run_bot(self, fl, search_mode, search_term, version_search, search_parent):
         driver = None
         try:
-            u_safe = quote(self.stored_user, safe='')
-            p_safe = quote(self.stored_pass, safe='')
-            url_inicial = f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={fl}"
-            self.after(0, lambda: self.lbl_status.configure(text="Opening browser..."))
-            options = webdriver.ChromeOptions()
-            options.add_argument('--ignore-certificate-errors')
-            options.add_argument('--window-size=1024,768')
-            options.page_load_strategy = 'eager'
-            driver = webdriver.Chrome(options=options)
-            driver.set_page_load_timeout(300)
-            try:
-                driver.get(url_inicial)
-            except Exception: pass
-            time.sleep(8)
-            self.after(0, lambda: self.lbl_status.configure(text="Reading contract list..."))
-            active_links = []
-            try:
-                linhas = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
-                for linha in linhas:
-                    cols = linha.find_elements(By.TAG_NAME, "td")
-                    if len(cols) >= 8 and "Active" in cols[7].text.strip():
-                        try:
-                            link = cols[2].find_element(By.TAG_NAME, "a").get_attribute("href")
-                            active_links.append(link)
-                        except: pass
-            except Exception as e:
-                print(f"Error reading table: {e}")
+            u_safe = quote(self.stored_user, safe="")
+            p_safe = quote(self.stored_pass, safe="")
 
-            for i, link in enumerate(active_links):
-                if self.stop_event.is_set(): break
-                self.after(0, lambda idx=i, total=len(active_links): self.lbl_status.configure(text=f"Checking contract {idx+1}/{total}..."))
+            self.after(0, lambda: self.lbl_status.configure(
+                text="Opening browser…", text_color="orange"))
+
+            opts = webdriver.ChromeOptions()
+            opts.add_argument("--ignore-certificate-errors")
+            opts.add_argument("--window-size=1024,768")
+            opts.page_load_strategy = "eager"
+            driver = webdriver.Chrome(options=opts)
+            driver.set_page_load_timeout(300)
+
+            fl_urls = [(
+                fl,
+                f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={fl}",
+            )]
+
+            if search_parent and not self.stop_event.is_set():
+                self.after(0, lambda: self.lbl_status.configure(
+                    text="Looking up parent FLs…", text_color="orange"))
+                parent_fls = self._get_parent_active_fls(driver, fl, u_safe, p_safe)
+                for pfl in parent_fls:
+                    fl_urls.append((
+                        pfl,
+                        f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={pfl}",
+                    ))
+                self.after(0, lambda n=len(parent_fls): self.lbl_status.configure(
+                    text=f"{n} sibling FL(s) found.\nReading contracts…", text_color="orange"
+                ))
+
+            fl_links = []
+            for fl_id, url in fl_urls:
+                if self.stop_event.is_set():
+                    break
+                self.after(0, lambda fid=fl_id: self.lbl_status.configure(
+                    text=f"Reading contracts\nfor FL {fid}…", text_color="orange"
+                ))
+                for link in self._get_active_contract_links(driver, url):
+                    fl_links.append((fl_id, link))
+
+            total = len(fl_links)
+            for i, (fl_id, link) in enumerate(fl_links):
+                if self.stop_event.is_set():
+                    break
+                self.after(0, lambda idx=i, tot=total, fid=fl_id: self.lbl_status.configure(
+                    text=f"FL {fid}\nContract {idx + 1}/{tot}…", text_color="orange"
+                ))
                 try:
                     driver.get(link)
-                except: pass
+                except Exception:
+                    pass
                 time.sleep(3)
                 try:
-                    linhas_det = driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]")
-                    for l_det in linhas_det:
-                        c_det = l_det.find_elements(By.TAG_NAME, "td")
-                        if len(c_det) < 20: continue
+                    for row in driver.find_elements(
+                            By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                        cols = row.find_elements(By.TAG_NAME, "td")
+                        if len(cols) < 20:
+                            continue
 
-                        material_code_text = c_det[8].text.strip().upper()
-                        material_desc_text = c_det[9].text.strip().upper()
-                        nickname_text = c_det[12].text.strip().upper()
-                        prod_skill_text = c_det[19].text.strip().upper()
-                        minor_material_text = c_det[20].text.strip().upper() if len(c_det) > 20 else ""
-                        contract_number = c_det[6].text.strip()
+                        mat_code   = cols[8].text.strip().upper()
+                        mat_desc   = cols[9].text.strip().upper()
+                        nickname   = cols[12].text.strip().upper()
+                        prod_skill = cols[19].text.strip().upper()
+                        minor_mat  = cols[20].text.strip().upper() if len(cols) > 20 else ""
+                        contract_num = cols[6].text.strip()
 
                         match = False
                         if search_mode == "Skill":
-                            skills_to_check = self.skill_to_related_map.get(search_term, [search_term])
-                            if any(skill.lower() in prod_skill_text.lower() for skill in skills_to_check):
+                            checks = self.skill_to_related_map.get(search_term, [search_term])
+                            if any(s.lower() in prod_skill.lower() for s in checks):
                                 match = True
-                        else: # Product
-                            searchable_text = " ".join([
-                                material_code_text,
-                                material_desc_text,
-                                nickname_text,
-                                prod_skill_text,
-                                minor_material_text,
-                            ])
-                            if search_term.lower() in searchable_text.lower():
+                        else:
+                            blob = " ".join([mat_code, mat_desc, nickname, prod_skill, minor_mat])
+                            if search_term.lower() in blob.lower():
                                 match = True
-                        
-                        if not match:
-                            continue
 
-                        version_match = not version_search or version_search.upper() in material_desc_text
-                        
-                        if version_match:
-                            clean_url = re.sub(r'https://[^@]+@', 'https://', link)
-                            self.after(0, self.add_result_item, prod_skill_text, contract_number, material_desc_text, clean_url)
+                        if match and (not version_search or version_search.upper() in mat_desc):
+                            clean_url = re.sub(r"https://[^@]+@", "https://", link)
+                            self.after(0, self.add_result_item,
+                                       fl_id, prod_skill, contract_num, mat_desc, clean_url)
                 except Exception as ex:
                     print(f"Error parsing details: {ex}")
 
             if not self.stop_event.is_set():
-                self.after(0, lambda: self.lbl_status.configure(text="Search Completed!", text_color="green"))
+                self.after(0, lambda: self.lbl_status.configure(
+                    text="Search completed!", text_color="#2ecc71"))
             else:
-                self.after(0, lambda: self.lbl_status.configure(text="Search Stopped.", text_color="red"))
+                self.after(0, lambda: self.lbl_status.configure(
+                    text="Search stopped.", text_color="#e74c3c"))
+
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Automation Error", str(e)))
-            self.after(0, lambda: self.lbl_status.configure(text="Error occurred.", text_color="red"))
+            self.after(0, lambda: self.lbl_status.configure(
+                text="Error occurred.", text_color="#e74c3c"))
         finally:
             if driver:
                 driver.quit()
             self.after(0, lambda: self.btn_start.configure(state="normal"))
             self.after(0, lambda: self.btn_stop.configure(state="disabled"))
+
 
 if __name__ == "__main__":
     app = ContractExtractorApp()
