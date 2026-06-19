@@ -1,24 +1,40 @@
 <template>
   <div ref="root" class="relative">
-    <input
-      ref="inputEl"
-      v-model="query"
-      type="text"
-      :disabled="disabled"
-      :placeholder="placeholder"
-      class="w-full px-3 py-2 text-sm rounded-lg border bg-gray-800 text-gray-100 placeholder-gray-500 transition-colors focus:outline-none"
-      :class="disabled
-        ? 'border-gray-700 opacity-50 cursor-not-allowed'
-        : 'border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-text'"
-      autocomplete="off"
-      @focus="openDropdown"
-      @blur="scheduleClose"
-      @keydown.down.prevent="moveDown"
-      @keydown.up.prevent="moveUp"
-      @keydown.enter.prevent="confirmHighlighted"
-      @keydown.escape="close"
-      @keydown.tab="close"
-    />
+    <div class="relative">
+      <input
+        ref="inputEl"
+        v-model="query"
+        type="text"
+        :disabled="disabled"
+        :placeholder="placeholder"
+        class="w-full pl-3 pr-8 py-2 text-sm rounded-lg border bg-gray-800 text-gray-100 placeholder-gray-500 transition-colors focus:outline-none"
+        :class="disabled
+          ? 'border-gray-700 opacity-50 cursor-not-allowed'
+          : 'border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-text'"
+        autocomplete="off"
+        @focus="openDropdown"
+        @blur="scheduleClose"
+        @keydown.down.prevent="moveDown"
+        @keydown.up.prevent="moveUp"
+        @keydown.enter.prevent="confirmHighlighted"
+        @keydown.escape="close"
+        @keydown.tab="close"
+      />
+
+      <!-- Clear button — aparece quando há texto no campo -->
+      <button
+        v-if="query && !disabled"
+        type="button"
+        tabindex="-1"
+        title="Limpar"
+        class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700 transition-colors"
+        @mousedown.prevent="clearQuery"
+      >
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
 
     <!-- Dropdown -->
     <Transition
@@ -112,6 +128,13 @@ function select(item: string) {
   query.value = item
   emit('update:modelValue', item)
   close()
+}
+
+function clearQuery() {
+  query.value = ''
+  emit('update:modelValue', '')
+  openDropdown()
+  nextTick(() => inputEl.value?.focus())
 }
 
 function moveDown() {
