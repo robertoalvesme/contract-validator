@@ -72,8 +72,7 @@ export default defineEventHandler(async (event) => {
       // ── Check each contract for matching items ────────────────────────────
       let found = 0
 
-      for (let i = 0; i < allLinks.length; i++) {
-        const { fl: contractFl, url } = allLinks[i]
+      for (const [i, { fl: contractFl, url }] of allLinks.entries()) {
         await push('status', {
           message: `FL ${contractFl}: checking contract ${i + 1} / ${allLinks.length}…`,
         })

@@ -1,5 +1,3 @@
-import { defineStore } from 'pinia'
-
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     handle: '',
@@ -14,15 +12,20 @@ export const useAuthStore = defineStore('auth', {
     setCredentials(handle: string, password: string, rememberHandle: boolean) {
       this.handle = handle
       this.password = password
-      if (rememberHandle) {
-        localStorage.setItem('cf_handle', handle)
-      } else {
-        localStorage.removeItem('cf_handle')
+      if (import.meta.client) {
+        if (rememberHandle) {
+          localStorage.setItem('cf_handle', handle)
+        } else {
+          localStorage.removeItem('cf_handle')
+        }
       }
     },
 
     loadSavedHandle(): string {
-      return localStorage.getItem('cf_handle') ?? ''
+      if (import.meta.client) {
+        return localStorage.getItem('cf_handle') ?? ''
+      }
+      return ''
     },
 
     logout() {

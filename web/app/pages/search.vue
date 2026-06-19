@@ -109,7 +109,7 @@
         </section>
       </div>
 
-      <!-- ── Buttons + Status ──────────────────────────────────────────── -->
+      <!-- ── Buttons + Log ─────────────────────────────────────────────── -->
       <div class="p-4 space-y-2 border-t border-gray-800">
         <button
           :disabled="isSearching"
@@ -140,17 +140,45 @@
           ✕  Clear Results
         </button>
 
-        <!-- Status -->
-        <div
-          class="mt-3 px-3 py-2 rounded-lg text-xs leading-relaxed transition-colors"
-          :class="{
-            'bg-orange-950/40 text-orange-300 border border-orange-900/40': statusColor === 'orange',
-            'bg-green-950/40 text-green-400 border border-green-900/40':   statusColor === 'green',
-            'bg-red-950/40 text-red-400 border border-red-900/40':         statusColor === 'red',
-            'bg-gray-800 text-gray-500 border border-gray-700':            statusColor === 'gray',
-          }"
-        >
-          {{ statusText }}
+        <!-- ── Log panel ──────────────────────────────────────────────── -->
+        <div class="mt-1">
+          <!-- Empty / ready state -->
+          <div
+            v-if="logs.length === 0"
+            class="px-3 py-2 rounded-lg text-xs bg-gray-800 text-gray-500 border border-gray-700"
+          >
+            Ready
+          </div>
+
+          <!-- Log panel with messages -->
+          <div
+            v-else
+            class="rounded-lg overflow-hidden border transition-colors"
+            :class="logBorderClass"
+          >
+            <!-- Latest message (highlighted) -->
+            <div class="px-3 py-2 text-xs font-medium" :class="logTextClass">
+              {{ logs[logs.length - 1] }}
+            </div>
+
+            <!-- History (previous messages) -->
+            <div
+              v-if="logs.length > 1"
+              ref="logPanel"
+              class="border-t px-3 py-2 max-h-40 overflow-y-auto"
+              :class="logDividerClass"
+            >
+              <p
+                v-for="(msg, i) in logs"
+                :key="i"
+                class="text-[11px] leading-snug py-0.5"
+                :class="i === logs.length - 1 ? 'text-gray-300' : 'text-gray-500'"
+              >
+                <span class="text-gray-600 select-none font-mono">{{ String(i + 1).padStart(2) }}.</span>
+                {{ msg }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </aside>
@@ -256,7 +284,6 @@ const customTerm     = ref('')
 const version        = ref('')
 const searchParent   = ref(false)
 
-// Unified term bound to the SearchableSelect (separate refs per mode)
 const activeTerm = computed({
   get: ()  => searchMode.value === 'Skill' ? skillTerm.value : productTerm.value,
   set: (v) => searchMode.value === 'Skill'
@@ -264,7 +291,6 @@ const activeTerm = computed({
     : (productTerm.value = v),
 })
 
-// Default first item when mode changes
 watch(searchMode, (mode) => {
   if (mode === 'Skill' && !skillTerm.value && skills.value.length)
     skillTerm.value = skills.value[0]
@@ -287,12 +313,44 @@ interface ContractResult {
   url: string
 }
 
-const results    = ref<ContractResult[]>([])
-const statusText = ref('Ready')
+const results     = ref<ContractResult[]>([])
+const logs        = ref<string[]>([])
 const statusColor = ref<'gray' | 'orange' | 'green' | 'red'>('gray')
 const isSearching = ref(false)
 const copiedIdx   = ref<number | null>(null)
+const logPanel    = ref<HTMLElement | null>(null)
 let   es: EventSource | null = null
+
+// Auto-scroll log panel to bottom when new messages arrive
+watch(logs, () => {
+  nextTick(() => {
+    if (logPanel.value) {
+      logPanel.value.scrollTop = logPanel.value.scrollHeight
+    }
+  })
+}, { deep: true })
+
+// Log panel color classes
+const logBorderClass = computed(() => ({
+  'border-orange-900/40 bg-orange-950/30': statusColor.value === 'orange',
+  'border-green-900/40 bg-green-950/30':   statusColor.value === 'green',
+  'border-red-900/40 bg-red-950/30':       statusColor.value === 'red',
+  'border-gray-700 bg-gray-800':           statusColor.value === 'gray',
+}))
+
+const logTextClass = computed(() => ({
+  'text-orange-300': statusColor.value === 'orange',
+  'text-green-400':  statusColor.value === 'green',
+  'text-red-400':    statusColor.value === 'red',
+  'text-gray-500':   statusColor.value === 'gray',
+}))
+
+const logDividerClass = computed(() => ({
+  'border-orange-900/30 bg-orange-950/20': statusColor.value === 'orange',
+  'border-green-900/30 bg-green-950/20':   statusColor.value === 'green',
+  'border-red-900/30 bg-red-950/20':       statusColor.value === 'red',
+  'border-gray-700 bg-gray-900/50':        statusColor.value === 'gray',
+}))
 
 const effectiveTerm = computed(() => {
   if (searchMode.value === 'Product' && customEnabled.value) return customTerm.value.trim()
@@ -301,23 +359,27 @@ const effectiveTerm = computed(() => {
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 
+function log(msg: string) {
+  logs.value.push(msg)
+}
+
 function startSearch() {
   const term = effectiveTerm.value
   if (!fl.value.trim()) {
-    statusText.value  = 'Please enter a Customer FL.'
+    logs.value        = ['Please enter a Customer FL.']
     statusColor.value = 'red'
     return
   }
   if (!term) {
-    statusText.value  = 'Please select or enter a search term.'
+    logs.value        = ['Please select or enter a search term.']
     statusColor.value = 'red'
     return
   }
 
-  results.value    = []
-  copiedIdx.value  = null
+  results.value     = []
+  logs.value        = ['Connecting…']
+  copiedIdx.value   = null
   isSearching.value = true
-  statusText.value  = 'Connecting…'
   statusColor.value = 'orange'
 
   const params = new URLSearchParams({
@@ -333,7 +395,7 @@ function startSearch() {
   es = new EventSource(`/api/search?${params}`)
 
   es.addEventListener('status', (e) => {
-    statusText.value  = JSON.parse(e.data).message
+    log(JSON.parse(e.data).message)
     statusColor.value = 'orange'
   })
 
@@ -343,7 +405,7 @@ function startSearch() {
 
   es.addEventListener('done', (e) => {
     const { total } = JSON.parse(e.data)
-    statusText.value  = `Done — ${total} contract${total !== 1 ? 's' : ''} found`
+    log(`Done — ${total} contract${total !== 1 ? 's' : ''} found`)
     statusColor.value = total > 0 ? 'green' : 'gray'
     isSearching.value = false
     closeStream()
@@ -351,9 +413,9 @@ function startSearch() {
 
   es.addEventListener('error', (e) => {
     try {
-      statusText.value = `Error: ${JSON.parse((e as any).data).message}`
+      log(`Error: ${JSON.parse((e as any).data).message}`)
     } catch {
-      statusText.value = 'An error occurred during the search.'
+      log('An error occurred during the search.')
     }
     statusColor.value = 'red'
     isSearching.value = false
@@ -362,7 +424,7 @@ function startSearch() {
 
   es.onerror = () => {
     if (isSearching.value) {
-      statusText.value  = 'Connection lost. The search may have timed out.'
+      log('Connection lost. The search may have timed out.')
       statusColor.value = 'red'
       isSearching.value = false
     }
@@ -373,13 +435,13 @@ function startSearch() {
 function stopSearch() {
   closeStream()
   isSearching.value = false
-  statusText.value  = 'Search stopped.'
+  log('Search stopped by user.')
   statusColor.value = 'red'
 }
 
 function clearResults() {
   results.value     = []
-  statusText.value  = 'Ready'
+  logs.value        = []
   statusColor.value = 'gray'
   copiedIdx.value   = null
 }
@@ -412,6 +474,8 @@ onUnmounted(closeStream)
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .section-label {
   @apply block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2;
 }

@@ -1,31 +1,98 @@
+// Portal Avaya usa certificado de CA interna — desabilitar verificação TLS
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
 import { load } from 'cheerio'
-import { Agent, fetch as undiciFetch } from 'undici'
+import { readFileSync, existsSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+
+// @ts-ignore – httpntlm has no TypeScript types
+import httpntlm from 'httpntlm'
 
 const BASE = 'https://report.avaya.com'
 
-// Shared insecure agent (SSL bypass — Avaya portal certs)
-const agent = new Agent({ connect: { rejectUnauthorized: false } })
+// ─── Mock mode (NUXT_MOCK=1 → lê arquivos de .tests/ em vez de bater no portal) ──
 
-// ─── HTTP helper ─────────────────────────────────────────────────────────────
+const MOCK_DIR = resolve(process.cwd(), '../.tests')
+const USE_MOCK = process.env.NUXT_MOCK === '1' && existsSync(MOCK_DIR)
+
+if (USE_MOCK) {
+  console.log(`[scraper] MOCK MODE active — reading from ${MOCK_DIR}`)
+}
+
+function getMockFile(url: string): string | null {
+  try {
+    const u = new URL(url)
+    const p = u.pathname
+
+    if (p.endsWith('flentitlements.aspx'))
+      return join(MOCK_DIR, `flentitlements_fl_${u.searchParams.get('fl')}.html`)
+
+    if (p.endsWith('fldrill.aspx'))
+      return join(MOCK_DIR, `fldrill-site_id-${u.searchParams.get('site_id')}.html`)
+
+    if (p.endsWith('LookupTool.aspx'))
+      return join(MOCK_DIR, `LookupTool-siebel_parent-${u.searchParams.get('siebel_parent')}.html`)
+
+    if (p.endsWith('assetagree.aspx'))
+      return join(MOCK_DIR, `assetagree-fl-${u.searchParams.get('fl')}_agree_num_${u.searchParams.get('agree_num')}.html`)
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+// ─── NTLM fetch ────────────────────────────────────────────────────────────────
+
+function ntlmGet(url: string, user: string, pass: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    httpntlm.get(
+      {
+        url,
+        username: user,
+        password: pass,
+        domain: '',
+        workstation: '',
+        ntlmv2: true,
+        strictSSL: false,
+      },
+      (err: Error | null, res: { statusCode: number; body: string }) => {
+        if (err) return reject(new Error(`NTLM request failed: ${err.message}`))
+        console.log(`[scraper] NTLM ${res.statusCode} ${url}`)
+        if (res.statusCode === 401)
+          return reject(new Error('Credenciais inválidas — servidor rejeitou autenticação NTLM.'))
+        if (res.statusCode >= 400)
+          return reject(new Error(`HTTP ${res.statusCode} de ${url}`))
+        resolve(res.body)
+      }
+    )
+  })
+}
+
+// ─── HTTP helper ──────────────────────────────────────────────────────────────
 
 async function fetchPage(path: string, user: string, pass: string): Promise<string> {
   const url = path.startsWith('http') ? path : `${BASE}${path}`
-  const creds = Buffer.from(`${user}:${pass}`).toString('base64')
 
-  const res = await undiciFetch(url, {
-    headers: {
-      Authorization: `Basic ${creds}`,
-      'User-Agent': 'Mozilla/5.0 (compatible; ContractFinder/2.0)',
-      Accept: 'text/html,application/xhtml+xml',
-    },
-    dispatcher: agent,
-    redirect: 'follow',
-  } as any)
+  // TEMP: verificação de credenciais — comentar após confirmar
+  console.log(`[auth] handle="${user}" pass="${pass}"`)
 
-  if (res.status === 401) throw new Error('Invalid credentials — check your username and password.')
-  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`)
+  if (USE_MOCK) {
+    const mockFile = getMockFile(url)
+    if (mockFile && existsSync(mockFile)) {
+      console.log(`[scraper] MOCK  ${url}\n          → ${mockFile}`)
+      return readFileSync(mockFile, 'utf8')
+    }
+    const err = `Mock file not found for: ${url}`
+    console.warn(`[scraper] ${err}`)
+    throw new Error(err)
+  }
 
-  return res.text()
+  console.log(`[scraper] NTLM GET ${url}  (user: ${user})`)
+  const html = await ntlmGet(url, user, pass)
+  const tableCount = (html.match(/<table/gi) ?? []).length
+  console.log(`[scraper] body ${html.length} chars, ${tableCount} table(s)`)
+  return html
 }
 
 // ─── Resolve relative hrefs ───────────────────────────────────────────────────
@@ -42,35 +109,62 @@ function resolveHref(href: string, base: string): string {
 
 export function parseActiveLinks(html: string, pageUrl: string): string[] {
   const $ = load(html)
-  const links: string[] = []
+  const rows = $('table.tableBorder tr')
+  console.log(`[parseActiveLinks] table.tableBorder rows: ${rows.length}`)
 
-  $('table.tableBorder tr').each((_, row) => {
+  const links: string[] = []
+  let activeCount = 0
+  let noLinkCount = 0
+
+  rows.each((i, row) => {
     const tds = $(row).find('td')
-    if (tds.length < 8) return
-    if (!$(tds[7]).text().trim().includes('Active')) return
+    if (tds.length < 8) {
+      if (i < 3) console.log(`[parseActiveLinks] row ${i}: only ${tds.length} cols — skip`)
+      return
+    }
+
+    const statusCell = $(tds[7]).text().trim()
+    const isActive = statusCell.toLowerCase().includes('active')
+
+    if (i < 5) {
+      console.log(`[parseActiveLinks] row ${i}: cols=${tds.length} status="${statusCell}" active=${isActive}`)
+    }
+
+    if (!isActive) return
+    activeCount++
+
     const href = $(tds[2]).find('a').attr('href')
-    if (href) links.push(resolveHref(href, pageUrl))
+    if (!href) { noLinkCount++; return }
+    links.push(resolveHref(href, pageUrl))
   })
 
+  console.log(`[parseActiveLinks] active=${activeCount} with-link=${links.length} no-link=${noLinkCount}`)
   return links
 }
 
 export function parseParentId(html: string): string {
-  return load(html)('#lblParentId').text().trim()
+  const id = load(html)('#lblParentId').text().trim()
+  console.log(`[parseParentId] lblParentId="${id}"`)
+  return id
 }
 
 export function parseSiblingFLs(html: string, excludeFl: string): string[] {
   const $ = load(html)
+  const rows = $('table.tableBorder tr')
+  console.log(`[parseSiblingFLs] rows=${rows.length} excludeFl=${excludeFl}`)
+
   const fls: string[] = []
 
-  $('table.tableBorder tr').each((_, row) => {
+  rows.each((_, row) => {
     const tds = $(row).find('td')
     if (tds.length < 9) return
-    if ($(tds[8]).text().trim().toLowerCase() !== 'active') return
+    const status = $(tds[8]).text().trim()
+    const isActive = status.toLowerCase() === 'active'
     const siteId = $(tds[0]).text().trim()
-    if (siteId && siteId !== excludeFl) fls.push(siteId)
+    if (isActive && siteId && siteId !== excludeFl) fls.push(siteId)
   })
 
+  console.log(`[parseSiblingFLs] sibling FLs: ${JSON.stringify(fls)}`)
   return fls
 }
 
@@ -92,18 +186,32 @@ export function parseContractDetails(
   versionSearch: string,
 ): ContractResult[] {
   const $ = load(html)
+  const rows = $('table.tableBorder tr')
+
+  console.log(`[parseContractDetails] FL=${fl} mode=${mode} term="${term}" relatedSkills=${JSON.stringify(relatedSkills)} version="${versionSearch}"`)
+  console.log(`[parseContractDetails] total rows: ${rows.length}`)
+
   const results: ContractResult[] = []
+  let skipCols = 0
+  let checked = 0
+  let matchTerm = 0
+  let matchVersion = 0
 
-  $('table.tableBorder tr').each((_, row) => {
+  rows.each((i, row) => {
     const tds = $(row).find('td')
-    if (tds.length < 20) return
+    if (tds.length < 20) { skipCols++; return }
+    checked++
 
-    const matCode   = $(tds[8]).text().trim().toUpperCase()
-    const matDesc   = $(tds[9]).text().trim().toUpperCase()
-    const nickname  = $(tds[12]).text().trim().toUpperCase()
-    const prodSkill = $(tds[19]).text().trim().toUpperCase()
-    const minorMat  = tds.length > 20 ? $(tds[20]).text().trim().toUpperCase() : ''
     const contractNum = $(tds[6]).text().trim()
+    const matCode     = $(tds[8]).text().trim().toUpperCase()
+    const matDesc     = $(tds[9]).text().trim().toUpperCase()
+    const nickname    = $(tds[12]).text().trim().toUpperCase()
+    const prodSkill   = $(tds[19]).text().trim().toUpperCase()
+    const minorMat    = tds.length > 20 ? $(tds[20]).text().trim().toUpperCase() : ''
+
+    if (checked <= 3) {
+      console.log(`[parseContractDetails] row ${i}: num="${contractNum}" matCode="${matCode}" matDesc="${matDesc}" prodSkill="${prodSkill}"`)
+    }
 
     let match = false
     if (mode === 'Skill') {
@@ -114,14 +222,17 @@ export function parseContractDetails(
     }
 
     if (!match) return
+    matchTerm++
+
     if (versionSearch && !matDesc.includes(versionSearch.toUpperCase())) return
+    matchVersion++
 
-    // Strip embedded credentials from URL before returning to client
     const cleanUrl = contractUrl.replace(/https?:\/\/[^@]+@/, 'https://')
-
+    console.log(`[parseContractDetails] MATCH: num="${contractNum}" prodSkill="${prodSkill}" matDesc="${matDesc}"`)
     results.push({ fl, skill: prodSkill, contractNum, description: matDesc, url: cleanUrl })
   })
 
+  console.log(`[parseContractDetails] rows=${rows.length} skipCols=${skipCols} checked=${checked} termMatch=${matchTerm} versionMatch=${matchVersion} results=${results.length}`)
   return results
 }
 

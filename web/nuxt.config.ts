@@ -1,24 +1,22 @@
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
 
-  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  modules: ['@pinia/nuxt'],
 
-  // SPA mode — credentials live only in memory, no SSR hydration issues
-  ssr: false,
+  css: ['~/assets/css/main.css'],
 
-  tailwindcss: {
-    cssPath: '~/assets/css/main.css',
-    config: {
-      darkMode: 'class',
-    },
-  },
-
-  pinia: {
-    storesDirs: ['./stores/**'],
+  vite: {
+    plugins: [tailwindcss()],
   },
 
   nitro: {
     preset: 'node-server',
+  },
+
+  routeRules: {
+    '/': { redirect: '/login' },
   },
 
   devtools: { enabled: false },
