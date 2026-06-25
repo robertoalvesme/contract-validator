@@ -11,6 +11,8 @@ import tkinter as tk
 from tkinter import messagebox
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -392,8 +394,6 @@ class ContractExtractorApp(ctk.CTk):
             command=self._update_search_options,
         ).pack(side="left", padx=24)
 
-        # Container that holds the combo + optional custom product widgets
-        # so they always stay in the correct visual position
         self._search_content = ctk.CTkFrame(sidebar, fg_color="transparent")
         self._search_content.pack(fill="x")
 
@@ -415,7 +415,6 @@ class ContractExtractorApp(ctk.CTk):
         )
         self.entry_custom = ctk.CTkEntry(
             self._search_content, placeholder_text="Product name…", height=36)
-        # check_custom and entry_custom are packed/unpacked by _update_search_options
 
         _divider(sidebar)
 
@@ -449,13 +448,18 @@ class ContractExtractorApp(ctk.CTk):
         )
         self.btn_clear.pack(fill="x", padx=14, pady=(4, 6))
 
-        # Status label
-        self.lbl_status = ctk.CTkLabel(
-            sidebar, text="Ready",
-            text_color="#6272a4", font=ctk.CTkFont(size=11),
-            wraplength=260,
+        _divider(sidebar)
+
+        # ── Execution Logs ────────────────────────────────────────────────────
+        _section_label(sidebar, "Execution Logs")
+        self.txt_log = ctk.CTkTextbox(
+            sidebar, font=ctk.CTkFont(size=11),
+            text_color="#a0b4d0", fg_color="#1a1a2e",
+            wrap="word", height=150
         )
-        self.lbl_status.pack(padx=14, pady=8)
+        self.txt_log.pack(fill="both", expand=True, padx=14, pady=(0, 10))
+        self.txt_log.insert("end", "Ready\n")
+        self.txt_log.configure(state="disabled")
 
         # ── Results area ──────────────────────────────────────────────────────
         main_area = ctk.CTkFrame(self, fg_color="#0e0e1a", corner_radius=0)
@@ -496,6 +500,18 @@ class ContractExtractorApp(ctk.CTk):
             self.entry_custom.pack_forget()
             self.combo_term.configure(state="normal")
 
+    # ── logging (Thread-Safe) ─────────────────────────────────────────────────
+
+    def write_log(self, message):
+        """Escreve a mensagem no console de logs com thread-safety."""
+        def update_ui():
+            self.txt_log.configure(state="normal")
+            self.txt_log.insert("end", f"{message}\n")
+            self.txt_log.see("end")
+            self.txt_log.configure(state="disabled")
+        self.after(0, update_ui)
+        print(message)
+
     # ── results ───────────────────────────────────────────────────────────────
 
     def clear_results(self):
@@ -506,7 +522,11 @@ class ContractExtractorApp(ctk.CTk):
         self.clear_results()
         self._result_count = 0
         self.lbl_result_count.configure(text="No results yet")
-        self.lbl_status.configure(text="Ready", text_color="#6272a4")
+
+        self.txt_log.configure(state="normal")
+        self.txt_log.delete("1.0", "end")
+        self.txt_log.insert("end", "Ready\n")
+        self.txt_log.configure(state="disabled")
 
     def add_result_item(self, fl, skill, contract_num, description, url_contract):
         self._result_count += 1
@@ -521,19 +541,15 @@ class ContractExtractorApp(ctk.CTk):
             f"Contract URL:\n{url_contract}"
         )
 
-        # Card
         card = ctk.CTkFrame(self.scroll_results, fg_color="#16162a", corner_radius=10)
         card.pack(fill="x", pady=3, padx=4)
 
-        # Blue left accent bar
         ctk.CTkFrame(card, width=4, fg_color="#1f538d", corner_radius=3).pack(
             side="left", fill="y", padx=(8, 0), pady=10)
 
-        # Info block (expands)
         info = ctk.CTkFrame(card, fg_color="transparent")
         info.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
-        # Row 1 – FL badge + skill name
         r1 = ctk.CTkFrame(info, fg_color="transparent")
         r1.pack(fill="x", anchor="w")
         ctk.CTkLabel(
@@ -547,7 +563,6 @@ class ContractExtractorApp(ctk.CTk):
             font=ctk.CTkFont(size=11), text_color="#8892a4", anchor="w",
         ).pack(side="left")
 
-        # Row 2 – asset number + material description
         r2 = ctk.CTkFrame(info, fg_color="transparent")
         r2.pack(fill="x", anchor="w", pady=(4, 0))
         ctk.CTkLabel(
@@ -560,7 +575,6 @@ class ContractExtractorApp(ctk.CTk):
             anchor="w", wraplength=420,
         ).pack(side="left")
 
-        # Buttons (right side)
         btns = ctk.CTkFrame(card, fg_color="transparent")
         btns.pack(side="right", padx=10, pady=10)
         ctk.CTkButton(
@@ -606,7 +620,12 @@ class ContractExtractorApp(ctk.CTk):
 
         self.btn_start.configure(state="disabled")
         self.btn_stop.configure(state="normal")
-        self.lbl_status.configure(text="Starting…", text_color="orange")
+
+        self.txt_log.configure(state="normal")
+        self.txt_log.delete("1.0", "end")
+        self.txt_log.insert("end", "Starting search...\n")
+        self.txt_log.configure(state="disabled")
+
         self.stop_event.clear()
 
         threading.Thread(
@@ -617,74 +636,83 @@ class ContractExtractorApp(ctk.CTk):
 
     def stop_automation(self):
         self.stop_event.set()
-        self.lbl_status.configure(text="Stopping…", text_color="#e74c3c")
+        self.write_log("Stopping automation... Waiting for current task to finish.")
         self.btn_stop.configure(state="disabled")
 
-    # ── bot / scraping ────────────────────────────────────────────────────────
+    # ── bot / scraping / helpers ──────────────────────────────────────────────
 
     def _get_active_contract_links(self, driver, url):
-        try:
-            driver.get(url)
-        except Exception:
-            pass
-        time.sleep(8)
-        links = []
-        try:
-            for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
-                cols = row.find_elements(By.TAG_NAME, "td")
-                if len(cols) >= 8 and "Active" in cols[7].text.strip():
-                    try:
-                        links.append(
-                            cols[2].find_element(By.TAG_NAME, "a").get_attribute("href")
-                        )
-                    except Exception:
-                        pass
-        except Exception as e:
-            print(f"Error reading contract table: {e}")
-        return links
+        for attempt in range(3):
+            try:
+                driver.get(url)
+                # Força a espera até a tabela aparecer na tela (Evita falha silenciosa de página não carregada)
+                WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.XPATH, "//table[@class='tableBorder']"))
+                )
+                time.sleep(2) # Pequena pausa para garantir renderização de dados dinâmicos
+
+                links = []
+                for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                    cols = row.find_elements(By.TAG_NAME, "td")
+                    if len(cols) >= 8 and "Active" in cols[7].text.strip():
+                        try:
+                            links.append(cols[2].find_element(By.TAG_NAME, "a").get_attribute("href"))
+                        except Exception:
+                            pass
+                return links
+            except Exception as e:
+                self.write_log(f"Aguardando carregamento da tabela de contratos (Tentativa {attempt + 1}/3)...")
+                time.sleep(3)
+
+        self.write_log("A tabela de contratos não carregou ou a página estava em branco/vazia.")
+        return []
 
     def _get_parent_active_fls(self, driver, fl, u_safe, p_safe):
         url_drill = f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/fldrill.aspx?site_id={fl}"
-        try:
-            driver.get(url_drill)
-        except Exception:
-            pass
-        time.sleep(5)
-
         parent_id = ""
-        try:
-            parent_id = driver.find_element(By.ID, "lblParentId").text.strip()
-        except Exception as e:
-            print(f"lblParentId not found for FL {fl}: {e}")
-            return []
+
+        for attempt in range(3):
+            try:
+                driver.get(url_drill)
+                lbl = WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.ID, "lblParentId"))
+                )
+                parent_id = lbl.text.strip()
+                break
+            except Exception:
+                self.write_log(f"Buscando Parent ID na página (Tentativa {attempt + 1}/3)...")
+                time.sleep(3)
 
         if not parent_id:
+            self.write_log(f"Nenhum Parent ID encontrado para a FL {fl}.")
             return []
 
-        self.after(0, lambda pid=parent_id: self.lbl_status.configure(
-            text=f"Parent: {pid}\nLoading siblings…", text_color="orange"
-        ))
+        self.write_log(f"Parent ID encontrado: {parent_id}. Carregando FLs filhas...")
 
         url_lookup = (
             f"https://{u_safe}:{p_safe}@report.avaya.com"
             f"/details/LookupTool.aspx?siebel_parent={parent_id}"
         )
-        try:
-            driver.get(url_lookup)
-        except Exception:
-            pass
-        time.sleep(5)
 
         active_fls = []
-        try:
-            for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
-                cols = row.find_elements(By.TAG_NAME, "td")
-                if len(cols) >= 9 and cols[8].text.strip().lower() == "active":
-                    sid = cols[0].text.strip()
-                    if sid and sid != fl:
-                        active_fls.append(sid)
-        except Exception as e:
-            print(f"Error reading LookupTool: {e}")
+        for attempt in range(3):
+            try:
+                driver.get(url_lookup)
+                WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.XPATH, "//table[@class='tableBorder']"))
+                )
+                time.sleep(2)
+                for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                    cols = row.find_elements(By.TAG_NAME, "td")
+                    if len(cols) >= 14 and cols[8].text.strip().lower() == "active" and cols[13].text.strip().upper() == "Y":
+                        sid = cols[0].text.strip()
+                        if sid and sid != fl:
+                            active_fls.append(sid)
+                self.write_log(f"Encontradas {len(active_fls)} FL(s) irmãs ativas com Agreement=Y.")
+                break
+            except Exception as e:
+                self.write_log(f"Aguardando carregamento da lista de filhas (Tentativa {attempt + 1}/3)...")
+                time.sleep(3)
 
         return active_fls
 
@@ -694,8 +722,7 @@ class ContractExtractorApp(ctk.CTk):
             u_safe = quote(self.stored_user, safe="")
             p_safe = quote(self.stored_pass, safe="")
 
-            self.after(0, lambda: self.lbl_status.configure(
-                text="Opening browser…", text_color="orange"))
+            self.write_log("Opening browser...")
 
             opts = webdriver.ChromeOptions()
             opts.add_argument("--ignore-certificate-errors")
@@ -710,43 +737,54 @@ class ContractExtractorApp(ctk.CTk):
             )]
 
             if search_parent and not self.stop_event.is_set():
-                self.after(0, lambda: self.lbl_status.configure(
-                    text="Looking up parent FLs…", text_color="orange"))
+                self.write_log(f"Looking up parent FLs for {fl}...")
                 parent_fls = self._get_parent_active_fls(driver, fl, u_safe, p_safe)
                 for pfl in parent_fls:
                     fl_urls.append((
                         pfl,
                         f"https://{u_safe}:{p_safe}@report.avaya.com/siebelreports/flentitlements.aspx?fl={pfl}",
                     ))
-                self.after(0, lambda n=len(parent_fls): self.lbl_status.configure(
-                    text=f"{n} sibling FL(s) found.\nReading contracts…", text_color="orange"
-                ))
+
+            self.write_log(f"Total FLs to query: {len(fl_urls)}")
 
             fl_links = []
             for fl_id, url in fl_urls:
                 if self.stop_event.is_set():
                     break
-                self.after(0, lambda fid=fl_id: self.lbl_status.configure(
-                    text=f"Reading contracts\nfor FL {fid}…", text_color="orange"
-                ))
-                for link in self._get_active_contract_links(driver, url):
+                self.write_log(f"Reading contracts for FL {fl_id}...")
+                new_links = self._get_active_contract_links(driver, url)
+                self.write_log(f"Found {len(new_links)} active contracts in FL {fl_id}.")
+                for link in new_links:
                     fl_links.append((fl_id, link))
 
             total = len(fl_links)
+            self.write_log(f"Total active contracts across all queried FLs: {total}")
+
             for i, (fl_id, link) in enumerate(fl_links):
                 if self.stop_event.is_set():
                     break
-                self.after(0, lambda idx=i, tot=total, fid=fl_id: self.lbl_status.configure(
-                    text=f"FL {fid}\nContract {idx + 1}/{tot}…", text_color="orange"
-                ))
+                self.write_log(f"Evaluating contract {i + 1}/{total} (FL {fl_id})...")
+
+                success = False
+                for attempt in range(3):
+                    try:
+                        driver.get(link)
+                        WebDriverWait(driver, 15).until(
+                            EC.presence_of_element_located((By.XPATH, "//table[@class='tableBorder']"))
+                        )
+                        time.sleep(1)
+                        success = True
+                        break
+                    except Exception:
+                        self.write_log(f"Recarregando detalhes do contrato (Tentativa {attempt + 1}/3)...")
+                        time.sleep(3)
+
+                if not success:
+                    self.write_log("Falha ao carregar os detalhes do contrato após 3 tentativas. Pulando.")
+                    continue
+
                 try:
-                    driver.get(link)
-                except Exception:
-                    pass
-                time.sleep(3)
-                try:
-                    for row in driver.find_elements(
-                            By.XPATH, "//table[@class='tableBorder']//tr[td]"):
+                    for row in driver.find_elements(By.XPATH, "//table[@class='tableBorder']//tr[td]"):
                         cols = row.find_elements(By.TAG_NAME, "td")
                         if len(cols) < 20:
                             continue
@@ -773,19 +811,16 @@ class ContractExtractorApp(ctk.CTk):
                             self.after(0, self.add_result_item,
                                        fl_id, prod_skill, contract_num, mat_desc, clean_url)
                 except Exception as ex:
-                    print(f"Error parsing details: {ex}")
+                    self.write_log(f"Error parsing details: {ex}")
 
             if not self.stop_event.is_set():
-                self.after(0, lambda: self.lbl_status.configure(
-                    text="Search completed!", text_color="#2ecc71"))
+                self.write_log("Search completed successfully!")
             else:
-                self.after(0, lambda: self.lbl_status.configure(
-                    text="Search stopped.", text_color="#e74c3c"))
+                self.write_log("Search was stopped by the user.")
 
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Automation Error", str(e)))
-            self.after(0, lambda: self.lbl_status.configure(
-                text="Error occurred.", text_color="#e74c3c"))
+            self.write_log(f"Error occurred: {e}")
         finally:
             if driver:
                 driver.quit()
