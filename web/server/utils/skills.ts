@@ -1,50 +1,38 @@
-import { readFileSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { getDb, skillsCol } from './db'
 
-interface SkillEntry {
-  skillName: string
-  relatedSkills: string[]
-  relatedMaterials: string[]
+interface SkillsData {
+  skillsList: string[]
+  productsList: string[]
+  skillMap: Record<string, string[]>
 }
 
-function loadRaw(): SkillEntry[] {
-  // Search for the JSON in order: bundled → sibling of server/ → project root
-  const candidates = [
-    resolve('server/data/default_skills.json'),
-    resolve('../default_skills.json'),
-    resolve('default_skills.json'),
-  ]
-  for (const p of candidates) {
-    if (existsSync(p)) {
-      try {
-        const raw = JSON.parse(readFileSync(p, 'utf8'))
-        // Support legacy dict format
-        if (!Array.isArray(raw)) {
-          return Object.entries(raw as Record<string, any>).map(([k, v]) => ({
-            skillName: k,
-            relatedSkills: v.relatedSkill ?? [],
-            relatedMaterials: v.relatedMaterial ?? [],
-          }))
-        }
-        return raw
-      } catch {}
-    }
-  }
-  console.warn('[skills] default_skills.json not found — skill map will be empty')
-  return []
+let _cache: { data: SkillsData; ts: number } | null = null
+const TTL = 5 * 60 * 1000 // 5 minutes
+
+export async function getSkillsData(): Promise<SkillsData> {
+  if (_cache && Date.now() - _cache.ts < TTL) return _cache.data
+
+  const db = await getDb()
+  const all = await skillsCol(db).find({}).sort({ name: 1 }).toArray()
+
+  const skillsList = all.map(s => s.name)
+
+  const productsList = Array.from(
+    new Set(all.flatMap(s => s.relatedMaterials.filter(Boolean))),
+  ).sort()
+
+  const skillMap = Object.fromEntries(
+    all.map(s => [
+      s.name,
+      Array.from(new Set([s.name, ...s.relatedSkills.filter(Boolean)])),
+    ]),
+  )
+
+  const data: SkillsData = { skillsList, productsList, skillMap }
+  _cache = { data, ts: Date.now() }
+  return data
 }
 
-const _skills = loadRaw()
-
-export const skillsList: string[] = _skills.map(s => s.skillName).sort()
-
-export const productsList: string[] = Array.from(
-  new Set(_skills.flatMap(s => s.relatedMaterials.filter(Boolean))),
-).sort()
-
-export const skillMap: Record<string, string[]> = Object.fromEntries(
-  _skills.map(s => [
-    s.skillName,
-    Array.from(new Set([s.skillName, ...s.relatedSkills.filter(Boolean)])),
-  ]),
-)
+export function invalidateSkillsCache() {
+  _cache = null
+}

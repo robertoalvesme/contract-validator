@@ -157,11 +157,12 @@ export function parseSiblingFLs(html: string, excludeFl: string): string[] {
 
   rows.each((_, row) => {
     const tds = $(row).find('td')
-    if (tds.length < 9) return
+    if (tds.length < 10) return
     const status = $(tds[8]).text().trim()
     const isActive = status.toLowerCase() === 'active'
+    const hasAgreement = $(tds[9]).find('a').length > 0 || $(tds[9]).text().trim() !== ''
     const siteId = $(tds[0]).text().trim()
-    if (isActive && siteId && siteId !== excludeFl) fls.push(siteId)
+    if (isActive && hasAgreement && siteId && siteId !== excludeFl) fls.push(siteId)
   })
 
   console.log(`[parseSiblingFLs] sibling FLs: ${JSON.stringify(fls)}`)

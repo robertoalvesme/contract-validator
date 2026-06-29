@@ -1,6 +1,6 @@
-import { skillsList, productsList } from '../utils/skills'
+import { getSkillsData } from '../utils/skills'
 
-export default defineEventHandler(() => ({
-  skills: skillsList,
-  products: productsList,
-}))
+export default defineEventHandler(async () => {
+  const { skillsList, productsList } = await getSkillsData()
+  return { skills: skillsList, products: productsList }
+})

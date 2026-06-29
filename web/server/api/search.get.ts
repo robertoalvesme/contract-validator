@@ -1,5 +1,5 @@
 import { createEventStream } from 'h3'
-import { skillMap, skillsList } from '../utils/skills'
+import { getSkillsData } from '../utils/skills'
 import {
   getActiveContractLinks,
   getParentId,
@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const stream = createEventStream(event)
   const versionSearch = version ? `R${version}` : ''
+  const { skillMap } = await getSkillsData()
   const relatedSkills = mode === 'Skill' ? (skillMap[term] ?? [term]) : []
 
   const push = (eventName: string, data: unknown) =>
