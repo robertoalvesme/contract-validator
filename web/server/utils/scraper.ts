@@ -75,7 +75,7 @@ async function fetchPage(path: string, user: string, pass: string): Promise<stri
   const url = path.startsWith('http') ? path : `${BASE}${path}`
 
   // TEMP: verificação de credenciais — comentar após confirmar
-  console.log(`[auth] handle="${user}" pass="${pass}"`)
+  console.log(`[auth] handle="${user}"`)
 
   if (USE_MOCK) {
     const mockFile = getMockFile(url)
@@ -237,13 +237,70 @@ export function parseContractDetails(
   return results
 }
 
+export function parseEntitlementDirectMatches(
+  html: string,
+  pageUrl: string,
+  fl: string,
+  contractNames: Set<string>,
+  contractCodes: Set<string>,
+  directTerm: string,
+  skillLabel: string,
+): ContractResult[] {
+  const $ = load(html)
+  const rows = $('table.tableBorder tr')
+  const results: ContractResult[] = []
+  const seen = new Set<string>()
+
+  console.log(`[parseEntitlementDirectMatches] FL=${fl} contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}"`)
+
+  rows.each((_, row) => {
+    const tds = $(row).find('td')
+    if (tds.length < 14) return
+
+    const statusCell = $(tds[7]).text().trim()
+    if (!statusCell.toLowerCase().includes('active')) return
+
+    const agreeNum = $(tds[2]).text().trim()
+    const svcMatCode = $(tds[12]).text().trim().toUpperCase()
+    const svcMatDesc = $(tds[13]).text().trim().toUpperCase()
+
+    // Unify names and codes into one set — matches svcMatDesc or svcMatCode against either field
+    const allIdentifiers = new Set([...contractNames, ...contractCodes])
+    const matched =
+      (allIdentifiers.size > 0 && (allIdentifiers.has(svcMatDesc) || allIdentifiers.has(svcMatCode))) ||
+      (directTerm.length > 0 && svcMatDesc.includes(directTerm))
+
+    if (!matched || !agreeNum) return
+
+    const key = `${agreeNum}|${svcMatDesc}`
+    if (seen.has(key)) return
+    seen.add(key)
+
+    console.log(`[parseEntitlementDirectMatches] MATCH: agreeNum="${agreeNum}" svcMatDesc="${svcMatDesc}"`)
+    results.push({ fl, skill: skillLabel, contractNum: agreeNum, description: svcMatDesc, url: pageUrl })
+  })
+
+  console.log(`[parseEntitlementDirectMatches] FL=${fl} directMatches=${results.length}`)
+  return results
+}
+
 // ─── High-level API ───────────────────────────────────────────────────────────
 
-export async function getActiveContractLinks(fl: string, user: string, pass: string): Promise<string[]> {
+export async function getEntitlementsPageData(
+  fl: string,
+  user: string,
+  pass: string,
+): Promise<{ links: string[]; html: string; pageUrl: string }> {
   const path = `/siebelreports/flentitlements.aspx?fl=${fl}`
   const pageUrl = `${BASE}${path}`
   const html = await fetchPage(path, user, pass)
-  return parseActiveLinks(html, pageUrl)
+  const links = parseActiveLinks(html, pageUrl)
+  return { links, html, pageUrl }
+}
+
+export async function getActiveContractLinks(fl: string, user: string, pass: string): Promise<string[]> {
+  const { links } = await getEntitlementsPageData(fl, user, pass)
+  return links
 }
 
 export async function getParentId(fl: string, user: string, pass: string): Promise<string> {

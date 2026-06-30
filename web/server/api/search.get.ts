@@ -1,7 +1,8 @@
 import { createEventStream } from 'h3'
-import { getSkillsData } from '../utils/skills'
+import { getSkillsData, getContractsBySkills, getSkillNamesByProduct } from '../utils/skills'
 import {
-  getActiveContractLinks,
+  getEntitlementsPageData,
+  parseEntitlementDirectMatches,
   getParentId,
   getSiblingFLs,
   getContractMatches,
@@ -53,14 +54,37 @@ export default defineEventHandler(async (event) => {
         }
       }
 
+      // ── Load contracts from DB for direct entitlement matching ──────────
+      const skillsForQuery = mode === 'Skill'
+        ? relatedSkills
+        : await getSkillNamesByProduct(term)
+
+      const { nameSet: contractNames, codeSet: contractCodes } =
+        await getContractsBySkills(skillsForQuery)
+
+      const directTerm = mode === 'Product' ? term.toUpperCase() : ''
+
+      console.log(`[search] mode=${mode} term="${term}" contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}"`)
+
       // ── Collect active contract links for every FL ────────────────────────
       type LinkEntry = { fl: string; url: string }
       const allLinks: LinkEntry[] = []
+      let found = 0
 
       for (const currentFl of flList) {
         await push('status', { message: `Reading active contracts for FL ${currentFl}…` })
         try {
-          const links = await getActiveContractLinks(currentFl, user, pass)
+          const { links, html, pageUrl } = await getEntitlementsPageData(currentFl, user, pass)
+
+          // Direct matches on Svc Mat Desc / Svc Mat Code in the entitlements page
+          const directMatches = parseEntitlementDirectMatches(
+            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term,
+          )
+          for (const m of directMatches) {
+            await push('result', m)
+            found++
+          }
+
           for (const url of links) allLinks.push({ fl: currentFl, url })
           await push('status', {
             message: `FL ${currentFl}: ${links.length} active contract(s) found.`,
@@ -71,7 +95,6 @@ export default defineEventHandler(async (event) => {
       }
 
       // ── Check each contract for matching items ────────────────────────────
-      let found = 0
 
       for (const [i, { fl: contractFl, url }] of allLinks.entries()) {
         await push('status', {
