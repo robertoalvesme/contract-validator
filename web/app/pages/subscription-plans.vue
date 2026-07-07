@@ -56,15 +56,31 @@
             {{ plans.length }} plan{{ plans.length !== 1 ? 's' : '' }} registered
           </p>
         </div>
-        <button
-          class="shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-          @click="openAdd"
-        >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span class="hidden xs:inline">Add </span>Plan
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Import TSV -->
+          <input ref="fileInputRef" type="file" accept=".tsv,.txt,.csv" class="hidden" @change="onFileSelected" />
+          <button
+            class="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40"
+            :disabled="importing"
+            @click="fileInputRef?.click()"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span class="hidden xs:inline">{{ importing ? 'Importing…' : 'Import TSV' }}</span>
+          </button>
+
+          <!-- Add plan -->
+          <button
+            class="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+            @click="openAdd"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span class="hidden xs:inline">Add </span>Plan
+          </button>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -184,6 +200,49 @@
         </div>
       </div>
     </main>
+
+    <!-- ── Import result modal ──────────────────────────────────────────── -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-150"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-100"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="importResult"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          @click.self="importResult = null"
+        >
+          <div class="w-full max-w-sm bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl p-6 space-y-4">
+            <h2 class="font-semibold text-white text-base">Resultado da importação</h2>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-lg bg-green-950 border border-green-900 px-4 py-3 text-center">
+                <p class="text-2xl font-bold text-green-400">{{ importResult.created }}</p>
+                <p class="text-xs text-green-600 mt-0.5">criados</p>
+              </div>
+              <div class="rounded-lg bg-blue-950 border border-blue-900 px-4 py-3 text-center">
+                <p class="text-2xl font-bold text-blue-400">{{ importResult.updated }}</p>
+                <p class="text-xs text-blue-600 mt-0.5">atualizados</p>
+              </div>
+            </div>
+
+            <div v-if="importResult.errors.length" class="rounded-lg bg-red-950/50 border border-red-900 px-3 py-2 space-y-1">
+              <p class="text-xs font-semibold text-red-400 uppercase tracking-wider">Avisos</p>
+              <p v-for="err in importResult.errors" :key="err" class="text-xs text-red-300">{{ err }}</p>
+            </div>
+
+            <button
+              class="w-full py-2.5 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              @click="importResult = null"
+            >Fechar</button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- ── Modal ──────────────────────────────────────────────────────────── -->
     <Teleport to="body">
@@ -480,6 +539,33 @@ async function doDelete(id: string) {
     await refresh()
   } catch (e: any) {
     alert(e?.data?.statusMessage ?? e?.data?.message ?? e.message ?? 'Failed to delete')
+  }
+}
+
+// ── Import TSV ───────────────────────────────────────────────────────────────────
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const importing    = ref(false)
+const importResult = ref<{ created: number; updated: number; errors: string[] } | null>(null)
+
+async function onFileSelected(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  ;(e.target as HTMLInputElement).value = ''   // reset so same file can be re-uploaded
+
+  importing.value = true
+  try {
+    const content = await file.text()
+    const result = await $fetch<{ created: number; updated: number; errors: string[] }>(
+      '/api/admin/contracts/import',
+      { method: 'POST', body: { content } },
+    )
+    importResult.value = result
+    await refresh()
+  } catch (err: any) {
+    alert(err?.data?.statusMessage ?? err?.data?.message ?? err.message ?? 'Falha na importação')
+  } finally {
+    importing.value = false
   }
 }
 
