@@ -86,7 +86,7 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-900 border-b border-gray-800">
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Code</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Codes</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Skills</th>
                 <th class="px-4 py-3 w-20 sm:w-24"></th>
@@ -102,9 +102,15 @@
                 class="transition-colors"
                 :class="deleteConfirm === p.id ? 'bg-red-950/40' : 'hover:bg-gray-900/60'"
               >
-                <!-- Code -->
+                <!-- Codes -->
                 <td class="px-4 py-3.5">
-                  <span class="font-mono text-xs px-2 py-1 rounded bg-gray-800 border border-gray-700 text-gray-300">{{ p.code }}</span>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      v-for="c in p.codes"
+                      :key="c"
+                      class="font-mono text-xs px-2 py-1 rounded bg-gray-800 border border-gray-700 text-gray-300 whitespace-nowrap"
+                    >{{ c }}</span>
+                  </div>
                 </td>
 
                 <!-- Name -->
@@ -223,16 +229,40 @@
                 />
               </div>
 
-              <!-- Code -->
+              <!-- Codes -->
               <div>
-                <label class="field-label">Code (identifier) <span class="text-red-500">*</span></label>
-                <input
-                  v-model="form.code"
-                  class="field-input font-mono"
-                  placeholder="e.g. PWM"
-                  @keydown.enter.prevent
-                />
-                <p class="text-xs text-gray-600 mt-1">Saved in uppercase</p>
+                <label class="field-label">
+                  Codes (identifiers) <span class="text-red-500">*</span>
+                </label>
+
+                <!-- Tags -->
+                <div v-if="form.codes.length" class="flex flex-wrap gap-1 mb-2">
+                  <span
+                    v-for="c in form.codes"
+                    :key="c"
+                    class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-gray-300 font-mono text-xs"
+                  >
+                    {{ c }}
+                    <button type="button" class="hover:text-white leading-none" @click="removeCode(c)">×</button>
+                  </span>
+                </div>
+
+                <!-- Input -->
+                <div class="flex gap-2">
+                  <input
+                    v-model="form.codeInput"
+                    class="field-input font-mono flex-1"
+                    placeholder="e.g. UC ESSNTLS R10 RBA FXD SUBS"
+                    @keydown.enter.prevent="addCode"
+                  />
+                  <button
+                    type="button"
+                    class="shrink-0 px-3 py-2.5 text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-40"
+                    :disabled="!form.codeInput.trim()"
+                    @click="addCode"
+                  >Add</button>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">Saved in uppercase · Press Enter or click Add</p>
               </div>
 
               <!-- Skills -->
@@ -302,7 +332,7 @@
               >Cancel</button>
               <button
                 class="px-5 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                :disabled="!form.name.trim() || !form.code.trim() || saving"
+                :disabled="!form.name.trim() || form.codes.length === 0 || saving"
                 @click="savePlan"
               >{{ saving ? 'Saving…' : 'Save' }}</button>
             </div>
@@ -322,7 +352,7 @@ const router = useRouter()
 interface PlanDto {
   id: string
   name: string
-  code: string
+  codes: string[]
   skills: string[]
 }
 
@@ -346,7 +376,10 @@ const filter = ref('')
 const filtered = computed(() => {
   const q = filter.value.toLowerCase()
   return q
-    ? plans.value.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
+    ? plans.value.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.codes.some(c => c.toLowerCase().includes(q)),
+      )
     : plans.value
 })
 
@@ -357,7 +390,7 @@ const editTarget    = ref<PlanDto | null>(null)
 const saving        = ref(false)
 const deleteConfirm = ref<string | null>(null)
 
-const form = ref({ name: '', code: '', skills: [] as string[] })
+const form = ref({ name: '', codes: [] as string[], codeInput: '', skills: [] as string[] })
 
 // Skill checkbox list
 const skillFilter       = ref('')
@@ -385,16 +418,28 @@ function toggleSkill(name: string) {
 
 function openAdd() {
   editTarget.value = null
-  form.value = { name: '', code: '', skills: [] }
+  form.value = { name: '', codes: [], codeInput: '', skills: [] }
   skillFilter.value = ''
   showModal.value = true
 }
 
 function openEdit(p: PlanDto) {
   editTarget.value = p
-  form.value = { name: p.name, code: p.code, skills: [...p.skills] }
+  form.value = { name: p.name, codes: [...p.codes], codeInput: '', skills: [...p.skills] }
   skillFilter.value = ''
   showModal.value = true
+}
+
+function addCode() {
+  const val = form.value.codeInput.trim().toUpperCase()
+  if (val && !form.value.codes.includes(val)) {
+    form.value.codes.push(val)
+  }
+  form.value.codeInput = ''
+}
+
+function removeCode(code: string) {
+  form.value.codes = form.value.codes.filter(c => c !== code)
 }
 
 function closeModal() {
@@ -409,7 +454,7 @@ async function savePlan() {
   try {
     const payload = {
       name: form.value.name.trim(),
-      code: form.value.code.trim(),
+      codes: form.value.codes,
       skills: form.value.skills,
     }
 

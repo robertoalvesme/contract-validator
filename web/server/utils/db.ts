@@ -46,7 +46,8 @@ export function toDto(doc: SkillDoc): SkillDto {
 export interface ContractDoc {
   _id?: ObjectId
   name: string
-  code: string
+  codes: string[]    // one or more identifiers (stored uppercase)
+  code?: string      // legacy field — migrated on read
   skills: string[]   // skill names (denormalized)
   createdAt?: Date
   updatedAt?: Date
@@ -55,7 +56,7 @@ export interface ContractDoc {
 export interface ContractDto {
   id: string
   name: string
-  code: string
+  codes: string[]
   skills: string[]
 }
 
@@ -64,10 +65,12 @@ export function contractsCol(db: Db): Collection<ContractDoc> {
 }
 
 export function contractToDto(doc: ContractDoc): ContractDto {
+  // Migrate legacy documents that still have a single `code` string
+  const codes = doc.codes?.length ? doc.codes : doc.code ? [doc.code] : []
   return {
     id: doc._id!.toString(),
     name: doc.name,
-    code: doc.code,
+    codes,
     skills: doc.skills ?? [],
   }
 }

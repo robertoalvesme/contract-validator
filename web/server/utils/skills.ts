@@ -54,9 +54,12 @@ export async function getContractsBySkills(skillNames: string[]): Promise<{ name
   const db = await getDb()
   console.log(`[getContractsBySkills] query skills $in: ${JSON.stringify(skillNames)}`)
   const docs = await contractsCol(db).find({ skills: { $in: skillNames } }).toArray()
-  console.log(`[getContractsBySkills] found ${docs.length} contract(s): ${JSON.stringify(docs.map(c => ({ name: c.name, code: c.code, skills: c.skills })))}`)
+  console.log(`[getContractsBySkills] found ${docs.length} contract(s): ${JSON.stringify(docs.map(c => ({ name: c.name, codes: c.codes, skills: c.skills })))}`)
   return {
     nameSet: new Set(docs.map(c => c.name.toUpperCase())),
-    codeSet: new Set(docs.filter(c => c.code).map(c => c.code.toUpperCase())),
+    codeSet: new Set(docs.flatMap(c => {
+      const list = c.codes?.length ? c.codes : c.code ? [c.code] : []
+      return list.map(code => code.toUpperCase())
+    })),
   }
 }
