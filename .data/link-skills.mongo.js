@@ -2,10 +2,11 @@
 // Vinculação de Skills → Subscription Plans
 // Gerado a partir da coluna 2 do subscriptions.tsv cruzada com db.skills
 //
-// Execução:
-//   docker exec -i web-mongo-1 mongosh mongodb://localhost:27017/contract_finder link-skills.mongo.js
-// ou localmente:
-//   mongosh mongodb://localhost:27017/contract_finder link-skills.mongo.js
+// Execução (a partir da pasta web/):
+//   Get-Content ..\.data\link-skills.mongo.js | docker exec -i web-mongo-1 mongosh mongodb://localhost:27017/contract_finder
+//
+// ou localmente (sem Docker):
+//   mongosh mongodb://localhost:27017/contract_finder < ..\.data\link-skills.mongo.js
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
