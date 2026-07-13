@@ -125,7 +125,7 @@
           <!-- Search Type -->
           <section>
             <label class="section-label">Search Type</label>
-            <div class="flex gap-5">
+            <div class="flex gap-5 flex-wrap">
               <label class="radio-label">
                 <input v-model="searchMode" type="radio" value="Skill" class="radio" />
                 <span>Skill</span>
@@ -134,11 +134,15 @@
                 <input v-model="searchMode" type="radio" value="Product" class="radio" />
                 <span>Product</span>
               </label>
+              <label class="radio-label">
+                <input v-model="searchMode" type="radio" value="MaterialCode" class="radio" />
+                <span>Mat. Code</span>
+              </label>
             </div>
           </section>
 
-          <!-- Searchable dropdown -->
-          <section>
+          <!-- Searchable dropdown (Skill / Product) -->
+          <section v-if="searchMode !== 'MaterialCode'">
             <label class="section-label">
               {{ searchMode === 'Skill' ? 'Skill' : 'Product' }}
             </label>
@@ -164,10 +168,23 @@
             />
           </section>
 
+          <!-- Material Code input -->
+          <section v-else>
+            <label class="section-label">Material Code</label>
+            <input
+              v-model="matCodeTerm"
+              type="text"
+              placeholder="e.g. 397134"
+              inputmode="numeric"
+              class="form-input"
+            />
+            <p class="mt-1.5 text-xs text-gray-500">Skill e produto são ignorados neste modo.</p>
+          </section>
+
           <div class="divider" />
 
-          <!-- Version filter -->
-          <section>
+          <!-- Version filter (not shown for Material Code) -->
+          <section v-if="searchMode !== 'MaterialCode'">
             <label class="section-label">
               Version Filter <span class="text-gray-600 font-normal">(optional)</span>
             </label>
@@ -344,11 +361,12 @@ const products = computed(() => skillsData.value?.products ?? [])
 
 // ── Form state ───────────────────────────────────────────────────────────────
 const fl             = ref('')
-const searchMode     = ref<'Skill' | 'Product'>('Skill')
+const searchMode     = ref<'Skill' | 'Product' | 'MaterialCode'>('Skill')
 const skillTerm      = ref('')
 const productTerm    = ref('')
 const customEnabled  = ref(false)
 const customTerm     = ref('')
+const matCodeTerm    = ref('')
 const version        = ref('')
 const searchParent   = ref(false)
 const sidebarOpen    = ref(false)
@@ -366,6 +384,7 @@ watch(searchMode, (mode) => {
   if (mode === 'Product' && !productTerm.value && products.value.length)
     productTerm.value = products.value[0]
   customEnabled.value = false
+  if (mode !== 'MaterialCode') matCodeTerm.value = ''
 })
 
 onMounted(() => {
@@ -418,6 +437,7 @@ const logDividerClass = computed(() => ({
 }))
 
 const effectiveTerm = computed(() => {
+  if (searchMode.value === 'MaterialCode') return matCodeTerm.value.trim()
   if (searchMode.value === 'Product' && customEnabled.value) return customTerm.value.trim()
   return activeTerm.value
 })
@@ -434,7 +454,9 @@ function startSearch() {
     return
   }
   if (!term) {
-    logs.value        = ['Please select or enter a search term.']
+    logs.value        = [searchMode.value === 'MaterialCode'
+      ? 'Please enter a Material Code.'
+      : 'Please select or enter a search term.']
     statusColor.value = 'red'
     return
   }

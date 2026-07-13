@@ -11,7 +11,7 @@ import {
 export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const fl           = String(q.fl ?? '')
-  const mode         = String(q.mode ?? 'Skill') as 'Skill' | 'Product'
+  const mode         = String(q.mode ?? 'Skill') as 'Skill' | 'Product' | 'MaterialCode'
   const term         = String(q.term ?? '')
   const version      = String(q.version ?? '')
   const searchParent = q.searchParent === '1'
@@ -24,7 +24,8 @@ export default defineEventHandler(async (event) => {
 
   const stream = createEventStream(event)
   const versionSearch = version ? `R${version}` : ''
-  const { skillMap } = await getSkillsData()
+  const isMaterialCode = mode === 'MaterialCode'
+  const { skillMap } = isMaterialCode ? { skillMap: {} as Record<string, string[]> } : await getSkillsData()
   const relatedSkills = mode === 'Skill' ? (skillMap[term] ?? [term]) : []
 
   const push = (eventName: string, data: unknown) =>
@@ -55,16 +56,19 @@ export default defineEventHandler(async (event) => {
       }
 
       // ── Load contracts from DB for direct entitlement matching ──────────
-      const skillsForQuery = mode === 'Skill'
-        ? relatedSkills
-        : await getSkillNamesByProduct(term)
+      const skillsForQuery = isMaterialCode
+        ? []
+        : mode === 'Skill' ? relatedSkills : await getSkillNamesByProduct(term)
 
-      const { nameSet: contractNames, codeSet: contractCodes } =
-        await getContractsBySkills(skillsForQuery)
+      const { nameSet: contractNames, codeSet: contractCodes } = isMaterialCode
+        ? { nameSet: new Set<string>(), codeSet: new Set<string>() }
+        : await getContractsBySkills(skillsForQuery)
 
-      const directTerm = mode === 'Product' ? term.toUpperCase() : ''
+      const directTerm  = mode === 'Product' ? term.toUpperCase() : ''
+      const matCodeTerm = isMaterialCode ? term.toUpperCase() : undefined
 
-      console.log(`[search] mode=${mode} term="${term}" contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}"`)
+      console.log(`[search] mode=${mode} term="${term}" contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}" matCodeTerm="${matCodeTerm ?? ''}"`)
+
 
       // ── Collect active contract links for every FL ────────────────────────
       type LinkEntry = { fl: string; url: string }
@@ -78,7 +82,7 @@ export default defineEventHandler(async (event) => {
 
           // Direct matches on Svc Mat Desc / Svc Mat Code in the entitlements page
           const directMatches = parseEntitlementDirectMatches(
-            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term,
+            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term, matCodeTerm,
           )
           for (const m of directMatches) {
             await push('result', m)

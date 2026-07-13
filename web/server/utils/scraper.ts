@@ -181,7 +181,7 @@ export function parseContractDetails(
   html: string,
   contractUrl: string,
   fl: string,
-  mode: 'Skill' | 'Product',
+  mode: 'Skill' | 'Product' | 'MaterialCode',
   term: string,
   relatedSkills: string[],
   versionSearch: string,
@@ -217,6 +217,8 @@ export function parseContractDetails(
     let match = false
     if (mode === 'Skill') {
       match = relatedSkills.some(s => prodSkill.includes(s.toUpperCase()))
+    } else if (mode === 'MaterialCode') {
+      match = matCode.includes(term.toUpperCase())
     } else {
       const blob = [matCode, matDesc, nickname, prodSkill, minorMat].join(' ')
       match = blob.includes(term.toUpperCase())
@@ -229,8 +231,9 @@ export function parseContractDetails(
     matchVersion++
 
     const cleanUrl = contractUrl.replace(/https?:\/\/[^@]+@/, 'https://')
-    console.log(`[parseContractDetails] MATCH: num="${contractNum}" prodSkill="${prodSkill}" matDesc="${matDesc}"`)
-    results.push({ fl, skill: prodSkill, contractNum, description: matDesc, url: cleanUrl })
+    const skillLabel = mode === 'MaterialCode' ? matCode : prodSkill
+    console.log(`[parseContractDetails] MATCH: num="${contractNum}" matCode="${matCode}" matDesc="${matDesc}"`)
+    results.push({ fl, skill: skillLabel, contractNum, description: matDesc, url: cleanUrl })
   })
 
   console.log(`[parseContractDetails] rows=${rows.length} skipCols=${skipCols} checked=${checked} termMatch=${matchTerm} versionMatch=${matchVersion} results=${results.length}`)
@@ -245,13 +248,14 @@ export function parseEntitlementDirectMatches(
   contractCodes: Set<string>,
   directTerm: string,
   skillLabel: string,
+  matCodeTerm?: string,
 ): ContractResult[] {
   const $ = load(html)
   const rows = $('table.tableBorder tr')
   const results: ContractResult[] = []
   const seen = new Set<string>()
 
-  console.log(`[parseEntitlementDirectMatches] FL=${fl} contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}"`)
+  console.log(`[parseEntitlementDirectMatches] FL=${fl} contractNames=${contractNames.size} contractCodes=${contractCodes.size} directTerm="${directTerm}" matCodeTerm="${matCodeTerm ?? ''}"`)
 
   rows.each((_, row) => {
     const tds = $(row).find('td')
@@ -264,11 +268,11 @@ export function parseEntitlementDirectMatches(
     const svcMatCode = $(tds[12]).text().trim().toUpperCase()
     const svcMatDesc = $(tds[13]).text().trim().toUpperCase()
 
-    // Unify names and codes into one set — matches svcMatDesc or svcMatCode against either field
     const allIdentifiers = new Set([...contractNames, ...contractCodes])
     const matched =
       (allIdentifiers.size > 0 && (allIdentifiers.has(svcMatDesc) || allIdentifiers.has(svcMatCode))) ||
-      (directTerm.length > 0 && svcMatDesc.includes(directTerm))
+      (directTerm.length > 0 && svcMatDesc.includes(directTerm)) ||
+      (matCodeTerm ? svcMatCode.includes(matCodeTerm.toUpperCase()) : false)
 
     if (!matched || !agreeNum) return
 
@@ -276,8 +280,9 @@ export function parseEntitlementDirectMatches(
     if (seen.has(key)) return
     seen.add(key)
 
-    console.log(`[parseEntitlementDirectMatches] MATCH: agreeNum="${agreeNum}" svcMatDesc="${svcMatDesc}"`)
-    results.push({ fl, skill: skillLabel, contractNum: agreeNum, description: svcMatDesc, url: pageUrl })
+    const label = matCodeTerm ? svcMatCode : skillLabel
+    console.log(`[parseEntitlementDirectMatches] MATCH: agreeNum="${agreeNum}" svcMatCode="${svcMatCode}" svcMatDesc="${svcMatDesc}"`)
+    results.push({ fl, skill: label, contractNum: agreeNum, description: svcMatDesc, url: pageUrl })
   })
 
   console.log(`[parseEntitlementDirectMatches] FL=${fl} directMatches=${results.length}`)
@@ -318,7 +323,7 @@ export async function getContractMatches(
   fl: string,
   user: string,
   pass: string,
-  mode: 'Skill' | 'Product',
+  mode: 'Skill' | 'Product' | 'MaterialCode',
   term: string,
   relatedSkills: string[],
   versionSearch: string,
