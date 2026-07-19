@@ -1,35 +1,12 @@
-# ── Git ──────────────────────────────────────────────────────────────────────
-.git/
-.gitignore
-.gitattributes
-
-# ── Arquivos de teste ─────────────────────────────────────────────────────────
-.tests/
-
-# ── Aplicação Python (não faz parte da imagem) ───────────────────────────────
-app/
-*.py
-__pycache__/
-*.pyc
-
 # ── Node ──────────────────────────────────────────────────────────────────────
-web/node_modules/
-web/.pnpm-store/
+node_modules/
+.pnpm-store/
 
 # ── Artefatos de dev do Nuxt ──────────────────────────────────────────────────
-web/.nuxt/
-web/.output/
+.nuxt/
+.output/
 
 # ── Variáveis de ambiente locais (podem conter credenciais) ───────────────────
-web/.env
-web/.env.local
-web/.env.*.local
-
-# ── IDE / editor ──────────────────────────────────────────────────────────────
-.idea/
-.vscode/
-*.code-workspace
-
-# ── Docs e logs ───────────────────────────────────────────────────────────────
-*.md
-*.log
+.env
+.env.local
+.env.*.local
