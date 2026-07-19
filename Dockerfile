@@ -8,7 +8,7 @@
 # ── Stage 1: install dependencies ────────────────────────────────────────────
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY web/package*.json ./
+COPY package*.json ./
 RUN npm ci --ignore-scripts
 
 # ── Stage 2: build ────────────────────────────────────────────────────────────
