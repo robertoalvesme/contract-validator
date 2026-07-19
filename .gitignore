@@ -33,3 +33,15 @@ bin/
 contract-finder.iml
 /build
 cf_debug.log
+
+
+node_modules/
+.nuxt/
+.output/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+server/data/default_skills.json
