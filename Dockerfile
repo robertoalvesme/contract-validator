@@ -1,9 +1,7 @@
 # syntax=docker/dockerfile:1
 #
-# Build context must be the PROJECT ROOT (parent of web/):
-#   docker build -f web/Dockerfile -t contract-finder .
-#
-# This allows COPY to access both web/ and default_skills.json.
+# Build context is now the PROJECT ROOT.
+# The Dockerfile and docker-compose.yml are in the root directory.
 
 # ── Stage 1: install dependencies ────────────────────────────────────────────
 FROM node:20-alpine AS deps

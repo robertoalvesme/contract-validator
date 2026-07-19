@@ -16,10 +16,7 @@ services:
       start_period: 10s
 
   contract-finder:
-    build:
-      # Context is project root so Dockerfile can access default_skills.json
-      context: ..
-      dockerfile: web/Dockerfile
+    build: .
     image: contract-finder:latest
     ports:
       - "8080:8080"
