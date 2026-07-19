@@ -13,9 +13,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Bundle skills data where the server utility can find it
+# Bundle seed data where the server utility can find it at runtime
 RUN mkdir -p server/data
 COPY default_skills.json ./server/data/default_skills.json
+COPY default_contracts.json ./server/data/default_contracts.json
 
 RUN npm run build
 

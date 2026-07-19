@@ -1,0 +1,388 @@
+[
+    {
+        "name":  "UC Essentials License Bundle",
+        "codes":  [
+                      "UC ESSENTIALS LIC FIXED SUBS ADJ LP",
+                      "UC ESSNTLS R10 RBA FXD SUBS",
+                      "UC ESSNTLS R8 RBA FXD SUBS ADJLP",
+                      "UC ESSNTLS R7 RBA FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Communication Manager",
+                       "System Manager",
+                       "Session Manager (ASM)",
+                       "Officelinx",
+                       "Aura SBC",
+                       "Enterprise SBC"
+                   ]
+    },
+    {
+        "name":  "UC Advanced License Bundle",
+        "codes":  [
+                      "UC ADVANCED LIC FIXED SUBS ADJ LP",
+                      "UC CORE LIC FIXED SUBS ADJ LP",
+                      "UC ADV R10 RBA FXD SUBS",
+                      "UC ADV R8 RBA FXD SUBS ADJLP",
+                      "UC ADV R7 RBA FXD SUBS ADJLP",
+                      "UC ADV R10 LIC FXD SUBS"
+                  ],
+        "skills":  [
+                       "Communication Manager",
+                       "System Manager",
+                       "Session Manager (ASM)",
+                       "Officelinx",
+                       "Aura SBC",
+                       "Enterprise SBC",
+                       "Presence Server (IPS)",
+                       "Client Applications",
+                       "Attendant Desktop",
+                       "Collaboration Environment"
+                   ]
+    },
+    {
+        "name":  "UC Ultra License Bundle",
+        "codes":  [
+                      "UC ULTRA LIC FIXED SUBS ADJ LP",
+                      "UC POWER LIC FIXED SUBS ADJ LP",
+                      "UC ULTRA R10 RBA FXD SUBS",
+                      "UC ULTRA R8 RBA FXD SUBS ADJLP",
+                      "UC ULTRA R7 RBA FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Communication Manager",
+                       "System Manager",
+                       "Session Manager (ASM)",
+                       "Officelinx",
+                       "Aura SBC",
+                       "Enterprise SBC",
+                       "Presence Server (IPS)",
+                       "Client Applications",
+                       "Attendant Desktop",
+                       "Collaboration Environment"
+                   ]
+    },
+    {
+        "name":  "CC Elite Voice License Bundle",
+        "codes":  [
+                      "CC ELITE VOICE LIC FIXED SUBS ADJ LP",
+                      "CC BASIC VOICE LIC FIXED SUBS ADJ LP",
+                      "CC ELITE R10 LIC FXD SUBS",
+                      "CC ELITE R10 RBA FXD SUBS",
+                      "CC ELITE R8 RBA FXD SUBS ADJLP",
+                      "CC ELITE R7 RBA FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Communication Manager",
+                       "System Manager",
+                       "Session Manager (ASM)",
+                       "Officelinx",
+                       "Aura SBC",
+                       "Enterprise SBC",
+                       "Presence Server (IPS)",
+                       "Client Applications",
+                       "Attendant Desktop",
+                       "Collaboration Environment",
+                       "CMS",
+                       "CMS Supervisor",
+                       "Advanced Application Support",
+                       "Voice Portal"
+                   ]
+    },
+    {
+        "name":  "Attendant Service",
+        "codes":  [
+                      "UC ATTENDANT LIC FIXED SUBS ADJ LP",
+                      "UC ATTD R5 LIC FXD SUBS",
+                      "UC ATTD R5 RBA FXD SUBS"
+                  ],
+        "skills":  [
+                       "Attendant Desktop",
+                       "Collaboration Environment"
+                   ]
+    },
+    {
+        "name":  "Avaya Aura Contact Center (AACC)",
+        "codes":  [
+                      "CC AACC BSC VOICE LIC FIXED SUBS ADJ LP",
+                      "CC AACC BSC VCE R7 LIC FXD SUBS",
+                      "CC AACC DIG PREM LIC FIXED SUBS ADJ LP",
+                      "CC AACC BSC VCE R7 RBA FXD SUBS",
+                      "CC AACC DGTL PREM R7 RBA FXD SUBS"
+                  ],
+        "skills":  [
+                       "Aura Contact Center"
+                   ]
+    },
+    {
+        "name":  "Avaya Aura CC Select (ACCS)",
+        "codes":  [
+                      "ACCS R7.1+ BASE SW BDL CHR...",
+                      "ACCS R7.1+ MMED FXD SUBS...",
+                      "ACCS R7.1+ RPRT CREATN WIZ...",
+                      "ACCS R7.1+ SPV FXD SUBS...",
+                      "ACCS R7.1+ VCE AGT FXD SUBS..."
+                  ],
+        "skills":  [
+                       "Aura Contact Center"
+                   ]
+    },
+    {
+        "name":  "Avaya Experience Portal (IVR)",
+        "codes":  [
+                      "CC IVR LIC FIXED SUBS ADJ LP",
+                      "CC IVR R8 RBA FXD SUBS",
+                      "CC IVR R7 RBA FXD SUBS ADJLP",
+                      "SA PREF AAEP R8 PER PT SUB POS 1YMO",
+                      "SA PREF AAEP R8 PER PT SUB POS 1YP",
+                      "SA PREF AAEP R8 PER PT SUB POS 3YAN",
+                      "SA PREF AAEP R8 PER PT SUB POS 3YMO",
+                      "SA PREF AAEP R8 PER PT SUB POS 5YP"
+                  ],
+        "skills":  [
+                       "Voice Portal"
+                   ]
+    },
+    {
+        "name":  "Proactive Outreach Manager (POM)",
+        "codes":  [
+                      "CC APOM BASE LIC FIXED SUBS ADJ LP",
+                      "CC APOM PREDICTIVE LIC FIXED SUBS ADJ LP",
+                      "CC APOM PREVIEW LIC FIXED SUBS ADJ LP",
+                      "CC APOM DIGCHEMAIL LIC FIXED SUBS ADJ LP",
+                      "CC APOM DIG CH SMS LIC FIXED SUBS ADJ LP",
+                      "CC APOM BASE R4 RBA FXD SUBS",
+                      "CC APOM BASE R3 RBA FXD SUBS ADJLP",
+                      "CC APOM PREDICTIVE R4 RBA FXD SUBS",
+                      "CC APOM PREVIEW R4 RBA FXD SUBS",
+                      "CC APOM DGTL CH EMAIL R4 RBA FXD SUBS",
+                      "CC APOM DGTL CH SMS R4 RBA FXD SUBS",
+                      "CC APOM DGTL CH SMS R3 RBA FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Proactive Outreach Manager"
+                   ]
+    },
+    {
+        "name":  "Call Back Assist (CBA)",
+        "codes":  [
+                      "CC CBA LIC FIXED SUBS ADJ LP",
+                      "CC CALLBK ASSIST R5 RBA FXD SUBS",
+                      "CC CALLBK ASSIST R4 RBA FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Avaya Messaging",
+        "codes":  [
+                      "UC MSG SPEECH LIC FIXED SUBS ADJ LP",
+                      "UC MSG TRANSCRPTN LIC FIXED SUBS ADJ LP",
+                      "SUB SA AV MSG MUTARE TRNSCRP USER",
+                      "SUB SA IX MSG MUTARE VTT USER",
+                      "SUB SA IX MSG NUANCE ASR/TTS USER",
+                      "SUB SA IX MSG SPH BNDL ASR/TTS/VTT USER",
+                      "SUB UA IX MSG MUTARE VTT USER",
+                      "SUB UA IX MSG NUANCE ASR/TTS USER",
+                      "SUB UA IX MSG SPH BNDL ASR/TTS/VTT USER"
+                  ],
+        "skills":  [
+                       "Officelinx"
+                   ]
+    },
+    {
+        "name":  "Application Enablement Services (AES)",
+        "codes":  [
+                      "3RD PARTY CTI LIC FIXED SUBS ADJ LP",
+                      "3RD PTY CTI ENTL LIC FIXED SUBS ADJ LP",
+                      "AES ADV TSAPI LIC FIXED SUBS ADJ LP",
+                      "AES ASAI LIC FIXED SUBS ADJ LP",
+                      "AES BASIC TSAPI LIC FXD SUBS ADJLP",
+                      "AES CVLAN LIC FIXED SUBS ADJ LP",
+                      "AES DLG LIC FIXED SUBS ADJ LP",
+                      "AES AGENT STATE LIC FIXED SUBS ADJ LP",
+                      "AES BASIC TSAPI ENTL LIC FXD SUBS ADJLP",
+                      "AES DMCC LIC FXD SUBS ADJLP",
+                      "AES DMCC ENTL LIC FXD SUBS ADJLP",
+                      "AES ADV TSAPI R10 RBA FXD SUBS",
+                      "AES ADV TSAPI R8 RBA FXD SUBS ADJLP",
+                      "AES ADV TSAPI R7 RBA FXD SUBS ADJLP",
+                      "AES ASAI R10 RBA FXD SUBS",
+                      "AES ASAI R8 RBA FXD SUBS ADJLP",
+                      "AES BASIC TSAPI R10 RBA FXD SUBS",
+                      "AES BASIC TSAPI R8 RBA FXD SUBS ADJLP",
+                      "AES BASIC TSAPI ENTL R10 RBA FXD SUBS",
+                      "AES BASIC TSAPI ENTL R8RBA FXD SUBSADJLP",
+                      "AES BASIC TSAPI ENTL R7RBA FXD SUBSADJLP",
+                      "AES DMCC R10 RBA FXD SUBS",
+                      "AES DMCC R8 RBA FXD SUBS ADJLP",
+                      "AES DMCC ENTL R10 RBA FXD SUBS",
+                      "AES DMCC ENTL R8 RBA FXD SUBS ADJLP",
+                      "AES BASIC DMCC ENTL R7 RBA FXD SUBSADJLP"
+                  ],
+        "skills":  [
+                       "AES"
+                   ]
+    },
+    {
+        "name":  "Avaya Session Border Controller (ASBCE)",
+        "codes":  [
+                      "ASBCE LIC FIXED SUBS ADJ LP",
+                      "ASBCE PREMIUM LIC FIXED SUBS ADJ LP",
+                      "ASBCE PREMIUM HA LIC FIXED SUBS ADJ LP",
+                      "ASBCE NG911 LIC FIXED SUBS ADJ LP",
+                      "ASBCE R10 RBA FXD SUBS",
+                      "ASBCE PREMIUM R10 RBA FXD SUBS",
+                      "ASBCE PREMIUM HA R10 RBA FXD SUBS"
+                  ],
+        "skills":  [
+                       "Aura SBC",
+                       "Enterprise SBC"
+                   ]
+    },
+    {
+        "name":  "CMS Connectors",
+        "codes":  [
+                      "CMS R19... (ALL 18 SKUS FROM BLPK TO WFO)",
+                      "CMS R20... (ALL 3 SKUS)",
+                      "CMS R21... (ALL 3 SKUS)"
+                  ],
+        "skills":  [
+                       "CMS",
+                       "CMS Supervisor",
+                       "Advanced Application Support",
+                       "Workforce Management"
+                   ]
+    },
+    {
+        "name":  "Google Dialogflow Connector",
+        "codes":  [
+                      "GOOGLE DLOGFLW CONN DR LIC FXD SUB ADJLP",
+                      "GOOGLE DLOGFLW CONN LIC FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Voice Portal"
+                   ]
+    },
+    {
+        "name":  "Avaya IP Office Platform",
+        "codes":  [
+                      "IPO UC USER FXD SUBS ADJLP",
+                      "POWERED IPOCC SUBS OFFER",
+                      "IPO CTI FXD SUBS ADJLP",
+                      "IPO MEDIA MGR FXD SUBS ADJLP",
+                      "IPO RECEPTIONIST FXD SUBS ADJLP",
+                      "IPO SUBS HW REM SRV SUPT",
+                      "IPO SUBSCRIPTION SERVICES SUPPORT",
+                      "IPO TELE SOFT USER FXD SUBS ADJLP",
+                      "IPO TELE USER FXD SUBS ADJLP",
+                      "POWERED IPO SUBS OFFER"
+                  ],
+        "skills":  [
+                       "IP Office"
+                   ]
+    },
+    {
+        "name":  "Avaya Experience Platform (AXP / CCaaS)",
+        "codes":  [
+                      "TODOS OS SKUS COMEÇANDO COM AXP...",
+                      "PUB CCAAS...",
+                      "IX DIGITAL..."
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Avaya Spaces",
+        "codes":  [
+                      "AVAYA SPACES SUBS SUPPORT",
+                      "AVAYA SPACES SVCS SUBS TRACK SUPT"
+                  ],
+        "skills":  [
+                       "Zang Spaces"
+                   ]
+    },
+    {
+        "name":  "Avaya Call Reporting / WFM",
+        "codes":  [
+                      "AV CALL RPTG BASIC FXD SUBS ADJLP",
+                      "AV CALL RPTG RCDG PT FXD SUBS ADJLP",
+                      "AV WFM FXD SUBS ADJLP"
+                  ],
+        "skills":  [
+                       "Workforce Management"
+                   ]
+    },
+    {
+        "name":  "Social Media Hub / SMCC",
+        "codes":  [
+                      "SMCC SUB ANNUAL",
+                      "SOCIAL MEDIA HUB FEE FIXED SUBS",
+                      "SOCIAL MEDIA HUB MSG USAGE SUBS"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Managed Services",
+        "codes":  [
+                      "MGD SRVC UC CORE FIXED SUBS ADJ LP",
+                      "MGD SRVC CC ELTE BSCVCE FIXD SUBS ADJ LP",
+                      "MGD SRVC CBA FIXED SUBS ADJ LP",
+                      "MGD SRVC WE ACR FIXED SUBS ADJ LP"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Subscription Support (SUB SA)",
+        "codes":  [
+                      "TODOS OS 68 SKUS COMEÇANDO COM SUB SA... (PARA CRM CONNECTOR",
+                      "DESKTOP WALLBOARD",
+                      "NUANCE",
+                      "WORKFORCE ENGAGEMENT",
+                      "ETC.)"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Subscription Upgrade (SUB UA)",
+        "codes":  [
+                      "TODOS OS 18 SKUS COMEÇANDO COM SUB UA... (PARA CRM CONNECTOR",
+                      "DESKTOP WALLBOARD",
+                      "IX MESSAGING",
+                      "ETC.)"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Special Alliance Contracts",
+        "codes":  [
+                      "UC GENERIC SUBSCRIPTION ALLIANCE",
+                      "UC GENERIC CLOUD ALLIANCE SUBSCRIPTION",
+                      "CC GENERIC PREMISE ALLI_SUBS",
+                      "CC GENERIC SUBSCRIPTION ALLIANCE",
+                      "VERINT PREMISE ALLI_SUBS FXD"
+                  ],
+        "skills":  [
+
+                   ]
+    },
+    {
+        "name":  "Other",
+        "codes":  [
+                      "AAX ZOOM WRKPLC FXD SUBS",
+                      "CIS SUBCONTRACTED SELF SVC APPL SUPT"
+                  ],
+        "skills":  [
+
+                   ]
+    }
+]
