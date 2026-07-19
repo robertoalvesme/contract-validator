@@ -392,22 +392,14 @@ onMounted(() => {
     skillTerm.value = skills.value[0]
 })
 
-// ── Search state ─────────────────────────────────────────────────────────────
-interface ContractResult {
-  fl: string
-  skill: string
-  contractNum: string
-  description: string
-  url: string
-}
+// ── Search state (client-side – browser faz as chamadas NTLM) ────────────────
+const {
+  results, logs, isSearching, statusColor,
+  startSearch: doSearch, stopSearch, clearResults: doClear,
+} = useAvayaSearch()
 
-const results     = ref<ContractResult[]>([])
-const logs        = ref<string[]>([])
-const statusColor = ref<'gray' | 'orange' | 'green' | 'red'>('gray')
-const isSearching = ref(false)
-const copiedIdx   = ref<number | null>(null)
-const logPanel    = ref<HTMLElement | null>(null)
-let   es: EventSource | null = null
+const copiedIdx = ref<number | null>(null)
+const logPanel  = ref<HTMLElement | null>(null)
 
 watch(logs, () => {
   nextTick(() => {
@@ -444,8 +436,6 @@ const effectiveTerm = computed(() => {
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 
-function log(msg: string) { logs.value.push(msg) }
-
 function startSearch() {
   const term = effectiveTerm.value
   if (!fl.value.trim()) {
@@ -461,75 +451,24 @@ function startSearch() {
     return
   }
 
-  results.value     = []
-  logs.value        = ['Connecting…']
   copiedIdx.value   = null
-  isSearching.value = true
-  statusColor.value = 'orange'
-  sidebarOpen.value = false   // close drawer on mobile when search starts
+  sidebarOpen.value = false
 
-  const params = new URLSearchParams({
+  doSearch({
     fl:           fl.value.trim(),
     mode:         searchMode.value,
     term,
     version:      version.value ?? '',
-    searchParent: searchParent.value ? '1' : '0',
-    user:         auth.handle,
-    pass:         auth.password,
+    searchParent: searchParent.value,
   })
-
-  es = new EventSource(`/api/search?${params}`)
-
-  es.addEventListener('status', (e) => {
-    log(JSON.parse(e.data).message)
-    statusColor.value = 'orange'
-  })
-
-  es.addEventListener('result', (e) => { results.value.push(JSON.parse(e.data)) })
-
-  es.addEventListener('done', (e) => {
-    const { total } = JSON.parse(e.data)
-    log(`Done — ${total} contract${total !== 1 ? 's' : ''} found`)
-    statusColor.value = total > 0 ? 'green' : 'gray'
-    isSearching.value = false
-    closeStream()
-  })
-
-  es.addEventListener('error', (e) => {
-    try { log(`Error: ${JSON.parse((e as any).data).message}`) }
-    catch { log('An error occurred during the search.') }
-    statusColor.value = 'red'
-    isSearching.value = false
-    closeStream()
-  })
-
-  es.onerror = () => {
-    if (isSearching.value) {
-      log('Connection lost. The search may have timed out.')
-      statusColor.value = 'red'
-      isSearching.value = false
-    }
-    closeStream()
-  }
-}
-
-function stopSearch() {
-  closeStream()
-  isSearching.value = false
-  log('Search stopped by user.')
-  statusColor.value = 'red'
 }
 
 function clearResults() {
-  results.value     = []
-  logs.value        = []
-  statusColor.value = 'gray'
-  copiedIdx.value   = null
+  doClear()
+  copiedIdx.value = null
 }
 
-function closeStream() { es?.close(); es = null }
-
-function copy(r: ContractResult, idx: number) {
+function copy(r: { fl: string; skill: string; contractNum: string; description: string; url: string }, idx: number) {
   const text = [
     'Contract Found',
     `FL: ${r.fl}`,
@@ -543,12 +482,10 @@ function copy(r: ContractResult, idx: number) {
 }
 
 function logout() {
-  closeStream()
+  stopSearch()
   auth.logout()
   router.push('/login')
 }
-
-onUnmounted(closeStream)
 </script>
 
 <style scoped>
