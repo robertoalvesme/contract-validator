@@ -1,12 +1,10 @@
 # syntax=docker/dockerfile:1
-#
-# Build context is now the PROJECT ROOT.
-# The Dockerfile and docker-compose.yml are in the root directory.
 
 # ── Stage 1: install dependencies ────────────────────────────────────────────
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY web/package*.json ./
+# Alterado: removido o "web/"
+COPY package*.json ./
 RUN npm ci --ignore-scripts
 
 # ── Stage 2: build ────────────────────────────────────────────────────────────
@@ -14,10 +12,12 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY web/ .
+# Alterado: copia todo o código da raiz atual para o diretório de trabalho
+COPY . .
 
 # Bundle skills data where the server utility can find it
 RUN mkdir -p server/data
+# Como default_skills.json também está na raiz, esta linha copia ele para a pasta final
 COPY default_skills.json ./server/data/default_skills.json
 
 RUN npm run build
