@@ -1,12 +1,23 @@
 // Portal Avaya usa certificado de CA interna — desabilitar verificação TLS
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
+import https from 'node:https'
 import { load } from 'cheerio'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 // @ts-ignore – httpntlm has no TypeScript types
 import httpntlm from 'httpntlm'
+
+// httpntlm cria seu próprio https.Agent internamente sem herdar as opções globais.
+// Passamos um agent explícito para garantir: sem verificação de certificado,
+// keepAlive (obrigatório para o handshake NTLM de 3 etapas) e TLS legado.
+const ntlmAgent = new https.Agent({
+  rejectUnauthorized: false,
+  keepAlive: true,
+  minVersion: 'TLSv1' as any,
+  ciphers: 'ALL',
+})
 
 const BASE = 'https://report.avaya.com'
 
@@ -55,6 +66,7 @@ function ntlmGet(url: string, user: string, pass: string): Promise<string> {
         workstation: '',
         ntlmv2: true,
         strictSSL: false,
+        agent: ntlmAgent,
       },
       (err: Error | null, res: { statusCode: number; body: string }) => {
         if (err) return reject(new Error(`NTLM request failed: ${err.message}`))

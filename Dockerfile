@@ -28,7 +28,6 @@ ENV NODE_ENV=production
 # Cloud Run injects PORT=8080; Nuxt/Nitro reads HOST and PORT
 ENV HOST=0.0.0.0
 ENV PORT=8080
-
 COPY --from=builder /app/.output ./.output
 # 👇 ESTA É A LINHA NOVA QUE FALTAVA 👇
 COPY --from=builder /app/server ./server
