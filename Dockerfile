@@ -28,6 +28,16 @@ ENV NODE_ENV=production
 # Cloud Run injects PORT=8080; Nuxt/Nitro reads HOST and PORT
 ENV HOST=0.0.0.0
 ENV PORT=8080
+# Allow TLS 1.0/1.1 — needed for legacy corporate servers (Avaya portal)
+ENV NODE_OPTIONS=--tls-min-v1.0
+
+# Lower the system OpenSSL minimum so Node's TLS binding can honour --tls-min-v1.0.
+# Alpine's OpenSSL 3 defaults to MinProtocol=TLSv1.2; this relaxes it.
+RUN sed -i \
+      -e 's/MinProtocol *= *TLSv1\.2/MinProtocol = TLSv1/g' \
+      -e 's/CipherString *= *DEFAULT@SECLEVEL=2/CipherString = DEFAULT@SECLEVEL=0/g' \
+      /etc/ssl/openssl.cnf 2>/dev/null || true
+
 COPY --from=builder /app/.output ./.output
 # 👇 ESTA É A LINHA NOVA QUE FALTAVA 👇
 COPY --from=builder /app/server ./server
