@@ -13,7 +13,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 20s
 
   contract-finder:
     build: .
@@ -30,11 +30,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/skills"]
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:8080/api/skills', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 15s
+      start_period: 30s
 
 volumes:
   mongo_data:
