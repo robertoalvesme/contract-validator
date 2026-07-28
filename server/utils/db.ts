@@ -4,7 +4,7 @@ let _client: MongoClient | null = null
 
 export async function getDb(): Promise<Db> {
   if (!_client) {
-    const uri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/contract_finder'
+    const uri = process.env.MONGODB_URI ?? 'mongodb://localhost:27018/contract_finder'
     _client = new MongoClient(uri)
     await _client.connect()
     console.log('[db] connected to MongoDB')
