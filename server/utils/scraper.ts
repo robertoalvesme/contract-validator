@@ -8,6 +8,7 @@ import { join, resolve } from 'node:path'
 
 // @ts-ignore – httpntlm has no TypeScript types
 import httpntlm from 'httpntlm'
+import { evaluateGracePeriod } from './gracePeriod'
 
 // httpntlm cria seu próprio https.Agent internamente sem herdar as opções globais.
 // Passamos um agent explícito para garantir: sem verificação de certificado,
@@ -130,19 +131,21 @@ export function parseActiveLinks(html: string, pageUrl: string): string[] {
 
   rows.each((i, row) => {
     const tds = $(row).find('td')
-    if (tds.length < 8) {
+    if (tds.length < 10) {
       if (i < 3) console.log(`[parseActiveLinks] row ${i}: only ${tds.length} cols — skip`)
       return
     }
 
     const statusCell = $(tds[7]).text().trim()
-    const isActive = statusCell.toLowerCase().includes('active')
+    const startCell = $(tds[8]).text().trim()
+    const endCell = $(tds[9]).text().trim()
+    const { included } = evaluateGracePeriod(statusCell, startCell, endCell)
 
     if (i < 5) {
-      console.log(`[parseActiveLinks] row ${i}: cols=${tds.length} status="${statusCell}" active=${isActive}`)
+      console.log(`[parseActiveLinks] row ${i}: cols=${tds.length} status="${statusCell}" included=${included}`)
     }
 
-    if (!isActive) return
+    if (!included) return
     activeCount++
 
     const href = $(tds[2]).find('a').attr('href')
@@ -187,6 +190,13 @@ export interface ContractResult {
   contractNum: string
   description: string
   url: string
+  materialCode: string
+  agreeStart: string
+  agreeEnd: string
+  isGracePeriod: boolean
+  isSubscriptionPlan: boolean
+  subscriptionPlanName?: string
+  svcMatDesc?: string
 }
 
 export function parseContractDetails(
@@ -215,6 +225,9 @@ export function parseContractDetails(
     if (tds.length < 20) { skipCols++; return }
     checked++
 
+    const rowStatus   = $(tds[3]).text().trim()
+    const rowStart    = $(tds[4]).text().trim()
+    const rowEnd      = $(tds[5]).text().trim()
     const contractNum = $(tds[6]).text().trim()
     const matCode     = $(tds[8]).text().trim().toUpperCase()
     const matDesc     = $(tds[9]).text().trim().toUpperCase()
@@ -242,10 +255,24 @@ export function parseContractDetails(
     if (versionSearch && !matDesc.includes(versionSearch.toUpperCase())) return
     matchVersion++
 
+    const { included, isGracePeriod } = evaluateGracePeriod(rowStatus, rowStart, rowEnd)
+    if (!included) return
+
     const cleanUrl = contractUrl.replace(/https?:\/\/[^@]+@/, 'https://')
     const skillLabel = mode === 'MaterialCode' ? matCode : prodSkill
-    console.log(`[parseContractDetails] MATCH: num="${contractNum}" matCode="${matCode}" matDesc="${matDesc}"`)
-    results.push({ fl, skill: skillLabel, contractNum, description: matDesc, url: cleanUrl })
+    console.log(`[parseContractDetails] MATCH: num="${contractNum}" matCode="${matCode}" matDesc="${matDesc}" grace=${isGracePeriod}`)
+    results.push({
+      fl,
+      skill: skillLabel,
+      contractNum,
+      description: matDesc,
+      url: cleanUrl,
+      materialCode: matCode,
+      agreeStart: rowStart,
+      agreeEnd: rowEnd,
+      isGracePeriod,
+      isSubscriptionPlan: false,
+    })
   })
 
   console.log(`[parseContractDetails] rows=${rows.length} skipCols=${skipCols} checked=${checked} termMatch=${matchTerm} versionMatch=${matchVersion} results=${results.length}`)
@@ -261,6 +288,7 @@ export function parseEntitlementDirectMatches(
   directTerm: string,
   skillLabel: string,
   matCodeTerm?: string,
+  planNameByIdentifier: Map<string, string> = new Map(),
 ): ContractResult[] {
   const $ = load(html)
   const rows = $('table.tableBorder tr')
@@ -274,17 +302,20 @@ export function parseEntitlementDirectMatches(
     if (tds.length < 14) return
 
     const statusCell = $(tds[7]).text().trim()
-    if (!statusCell.toLowerCase().includes('active')) return
+    const startCell = $(tds[8]).text().trim()
+    const endCell = $(tds[9]).text().trim()
+    const { included, isGracePeriod } = evaluateGracePeriod(statusCell, startCell, endCell)
+    if (!included) return
 
     const agreeNum = $(tds[2]).text().trim()
     const svcMatCode = $(tds[12]).text().trim().toUpperCase()
     const svcMatDesc = $(tds[13]).text().trim().toUpperCase()
 
     const allIdentifiers = new Set([...contractNames, ...contractCodes])
-    const matched =
-      (allIdentifiers.size > 0 && (allIdentifiers.has(svcMatDesc) || allIdentifiers.has(svcMatCode))) ||
-      (directTerm.length > 0 && svcMatDesc.includes(directTerm)) ||
-      (matCodeTerm ? svcMatCode.includes(matCodeTerm.toUpperCase()) : false)
+    const isSubscriptionPlan = allIdentifiers.size > 0 && (allIdentifiers.has(svcMatDesc) || allIdentifiers.has(svcMatCode))
+    const termMatch = directTerm.length > 0 && svcMatDesc.includes(directTerm)
+    const codeMatch = matCodeTerm ? svcMatCode.includes(matCodeTerm.toUpperCase()) : false
+    const matched = isSubscriptionPlan || termMatch || codeMatch
 
     if (!matched || !agreeNum) return
 
@@ -293,8 +324,24 @@ export function parseEntitlementDirectMatches(
     seen.add(key)
 
     const label = matCodeTerm ? svcMatCode : skillLabel
-    console.log(`[parseEntitlementDirectMatches] MATCH: agreeNum="${agreeNum}" svcMatCode="${svcMatCode}" svcMatDesc="${svcMatDesc}"`)
-    results.push({ fl, skill: label, contractNum: agreeNum, description: svcMatDesc, url: pageUrl })
+    const subscriptionPlanName = isSubscriptionPlan
+      ? (planNameByIdentifier.get(svcMatDesc) ?? planNameByIdentifier.get(svcMatCode))
+      : undefined
+    console.log(`[parseEntitlementDirectMatches] MATCH: agreeNum="${agreeNum}" svcMatCode="${svcMatCode}" svcMatDesc="${svcMatDesc}" plan=${isSubscriptionPlan} grace=${isGracePeriod}`)
+    results.push({
+      fl,
+      skill: label,
+      contractNum: agreeNum,
+      description: svcMatDesc,
+      url: pageUrl,
+      materialCode: svcMatCode,
+      agreeStart: startCell,
+      agreeEnd: endCell,
+      isGracePeriod,
+      isSubscriptionPlan,
+      subscriptionPlanName,
+      svcMatDesc: isSubscriptionPlan ? svcMatDesc : undefined,
+    })
   })
 
   console.log(`[parseEntitlementDirectMatches] FL=${fl} directMatches=${results.length}`)

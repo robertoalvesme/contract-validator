@@ -60,8 +60,8 @@ export default defineEventHandler(async (event) => {
         ? []
         : mode === 'Skill' ? relatedSkills : await getSkillNamesByProduct(term)
 
-      const { nameSet: contractNames, codeSet: contractCodes } = isMaterialCode
-        ? { nameSet: new Set<string>(), codeSet: new Set<string>() }
+      const { nameSet: contractNames, codeSet: contractCodes, planNameByIdentifier } = isMaterialCode
+        ? { nameSet: new Set<string>(), codeSet: new Set<string>(), planNameByIdentifier: new Map<string, string>() }
         : await getContractsBySkills(skillsForQuery)
 
       const directTerm  = mode === 'Product' ? term.toUpperCase() : ''
@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
 
           // Direct matches on Svc Mat Desc / Svc Mat Code in the entitlements page
           const directMatches = parseEntitlementDirectMatches(
-            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term, matCodeTerm,
+            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term, matCodeTerm, planNameByIdentifier,
           )
           for (const m of directMatches) {
             await push('result', m)
