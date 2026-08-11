@@ -136,12 +136,12 @@ def main():
                     # Remove o trecho "usuario:senha@" da URL antes de salvar
                     url_limpa = re.sub(r'https://[^@]+@', 'https://', link)
 
-                    resultado_texto = (
-                        f"Contract Found\n"
-                        f"Skill: {prod_skill_texto}\n"
-                        f"Asset Number: {asset_num}\n"
-                        f"Contract URL: {url_limpa}"
-                    )
+                        resultado_texto = (
+                            f"Contract Found\n"
+                            f"Skill: {prod_skill_texto}\n"
+                            f"Asset Number: {asset_num}\n"
+                            f"Contract URL: {url_limpa}"
+                        )
 
                     contrato_encontrado = True
                     print("\n>>> SUCESSO! CONTRATO LOCALIZADO. <<<")

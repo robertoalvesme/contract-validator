@@ -316,6 +316,20 @@
                 <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-950 border border-blue-800 text-blue-300 text-xs font-mono font-semibold">
                   FL {{ r.fl }}
                 </span>
+                <span
+                  v-if="r.isSubscriptionPlan"
+                  class="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-950 border border-purple-800 text-purple-300 text-xs font-semibold"
+                  title="Matched via a registered Subscription Plan"
+                >
+                  Plan
+                </span>
+                <span
+                  v-if="r.isGracePeriod"
+                  class="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-950 border border-amber-800 text-amber-300 text-xs font-semibold"
+                  title="Contract is not Active — included under the grace period rules"
+                >
+                  Grace Period
+                </span>
                 <span class="text-xs text-gray-400 truncate">{{ r.skill }}</span>
               </div>
               <div class="flex items-baseline gap-2 sm:gap-3 flex-wrap">
@@ -399,6 +413,13 @@ interface ContractResult {
   contractNum: string
   description: string
   url: string
+  materialCode: string
+  agreeStart: string
+  agreeEnd: string
+  isGracePeriod: boolean
+  isSubscriptionPlan: boolean
+  subscriptionPlanName?: string
+  svcMatDesc?: string
 }
 
 const results     = ref<ContractResult[]>([])
@@ -529,17 +550,68 @@ function clearResults() {
 
 function closeStream() { es?.close(); es = null }
 
-function copy(r: ContractResult, idx: number) {
-  const text = [
+function buildClipboardText(r: ContractResult): string {
+  const lines = [
     'Contract Found',
     `FL: ${r.fl}`,
-    `Skill: ${r.skill}`,
+    `Product Skill: ${r.skill}`,
+    `Contract URL: ${r.url}`,
     `Asset Number: ${r.contractNum}`,
-    `Contract URL:\n${r.url}`,
-  ].join('\n')
-  navigator.clipboard.writeText(text)
-  copiedIdx.value = idx
-  setTimeout(() => { if (copiedIdx.value === idx) copiedIdx.value = null }, 2000)
+    `Material Code: ${r.materialCode || '-'}`,
+    `Material Description: ${r.description || '-'}`,
+    `Agree Start: ${r.agreeStart || '-'}`,
+    `Agree End: ${r.agreeEnd || '-'}`,
+  ]
+  if (r.isGracePeriod) lines.push('Grace Period: Yes')
+  if (r.isSubscriptionPlan) {
+    lines.push(`Subscription Plan: ${r.subscriptionPlanName ?? '-'}`)
+    lines.push(`Svc Mat Desc: ${r.svcMatDesc ?? '-'}`)
+  }
+  return lines.join('\n')
+}
+
+// Falls back to the legacy execCommand approach when the async Clipboard API
+// isn't available (non-secure context, older browsers, permission denied).
+function fallbackCopyText(text: string): boolean {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  let ok = false
+  try {
+    ok = document.execCommand('copy')
+  } catch {
+    ok = false
+  }
+  document.body.removeChild(textarea)
+  return ok
+}
+
+async function copy(r: ContractResult, idx: number) {
+  const text = buildClipboardText(r)
+  let ok = false
+
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text)
+      ok = true
+    } catch {
+      ok = false
+    }
+  }
+
+  if (!ok) ok = fallbackCopyText(text)
+
+  if (ok) {
+    copiedIdx.value = idx
+    setTimeout(() => { if (copiedIdx.value === idx) copiedIdx.value = null }, 2000)
+  } else {
+    log('Failed to copy to clipboard.')
+    statusColor.value = 'red'
+  }
 }
 
 function logout() {
