@@ -102,99 +102,141 @@
         <!-- Form -->
         <div class="flex-1 p-4 space-y-5">
 
-          <!-- Customer FL -->
+          <!-- Search By -->
           <section>
-            <label class="section-label">Customer FL</label>
-            <input
-              v-model="fl"
-              type="text"
-              placeholder="e.g. 0051849434"
-              inputmode="numeric"
-              class="form-input"
-            />
-            <label class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
-              <input v-model="searchParent" type="checkbox" class="checkbox" />
-              <span class="text-sm text-gray-400 group-hover:text-gray-300 select-none transition-colors">
-                Also search Parent FLs
-              </span>
-            </label>
-          </section>
-
-          <div class="divider" />
-
-          <!-- Search Type -->
-          <section>
-            <label class="section-label">Search Type</label>
+            <label class="section-label">Search By</label>
             <div class="flex gap-5 flex-wrap">
               <label class="radio-label">
-                <input v-model="searchMode" type="radio" value="Skill" class="radio" />
-                <span>Skill</span>
+                <input v-model="searchBy" type="radio" value="SR" class="radio" />
+                <span>SR</span>
               </label>
               <label class="radio-label">
-                <input v-model="searchMode" type="radio" value="Product" class="radio" />
-                <span>Product</span>
-              </label>
-              <label class="radio-label">
-                <input v-model="searchMode" type="radio" value="MaterialCode" class="radio" />
-                <span>Mat. Code</span>
+                <input v-model="searchBy" type="radio" value="FL" class="radio" />
+                <span>FL</span>
               </label>
             </div>
           </section>
 
-          <!-- Searchable dropdown (Skill / Product) -->
-          <section v-if="searchMode !== 'MaterialCode'">
-            <label class="section-label">
-              {{ searchMode === 'Skill' ? 'Skill' : 'Product' }}
-            </label>
-            <SearchableSelect
-              v-model="activeTerm"
-              :options="searchMode === 'Skill' ? skills : products"
-              :disabled="searchMode === 'Product' && customEnabled"
-              :placeholder="`Type to filter ${searchMode === 'Skill' ? 'skills' : 'products'}…`"
-            />
-
-            <label v-if="searchMode === 'Product'" class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
-              <input v-model="customEnabled" type="checkbox" class="checkbox" />
-              <span class="text-sm text-gray-400 group-hover:text-gray-300 select-none transition-colors">
-                Enter custom product name
-              </span>
-            </label>
-            <input
-              v-if="searchMode === 'Product' && customEnabled"
-              v-model="customTerm"
-              type="text"
-              placeholder="Product name…"
-              class="form-input mt-2"
-            />
-          </section>
-
-          <!-- Material Code input -->
-          <section v-else>
-            <label class="section-label">Material Code</label>
-            <input
-              v-model="matCodeTerm"
-              type="text"
-              placeholder="e.g. 397134"
-              inputmode="numeric"
-              class="form-input"
-            />
-            <p class="mt-1.5 text-xs text-gray-500">Skill e produto são ignorados neste modo.</p>
-          </section>
-
           <div class="divider" />
 
-          <!-- Version filter (not shown for Material Code) -->
-          <section v-if="searchMode !== 'MaterialCode'">
-            <label class="section-label">
-              Version Filter <span class="text-gray-600 font-normal">(optional)</span>
-            </label>
-            <input
-              v-model="version"
-              type="text"
-              placeholder="e.g. 8, 9, 10"
-              class="form-input"
-            />
-          </section>
+          <!-- SR search -->
+          <template v-if="searchBy === 'SR'">
+            <section>
+              <label class="section-label">SR Number</label>
+              <input
+                v-model="srNumber"
+                type="text"
+                placeholder="e.g. 1-23759529231"
+                class="form-input"
+              />
+              <p class="mt-1.5 text-xs text-gray-500">
+                Site and Operational Skill are looked up automatically from the SR.
+              </p>
+              <label class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
+                <input v-model="searchParent" type="checkbox" class="checkbox" />
+                <span class="text-sm text-gray-400 group-hover:text-gray-300 select-none transition-colors">
+                  Also search Parent FLs
+                </span>
+              </label>
+            </section>
+          </template>
+
+          <!-- FL search -->
+          <template v-else>
+            <!-- Customer FL -->
+            <section>
+              <label class="section-label">Customer FL</label>
+              <input
+                v-model="fl"
+                type="text"
+                placeholder="e.g. 0051849434"
+                inputmode="numeric"
+                class="form-input"
+              />
+              <label class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
+                <input v-model="searchParent" type="checkbox" class="checkbox" />
+                <span class="text-sm text-gray-400 group-hover:text-gray-300 select-none transition-colors">
+                  Also search Parent FLs
+                </span>
+              </label>
+            </section>
+
+            <div class="divider" />
+
+            <!-- Search Type -->
+            <section>
+              <label class="section-label">Search Type</label>
+              <div class="flex gap-5 flex-wrap">
+                <label class="radio-label">
+                  <input v-model="searchMode" type="radio" value="Skill" class="radio" />
+                  <span>Skill</span>
+                </label>
+                <label class="radio-label">
+                  <input v-model="searchMode" type="radio" value="Product" class="radio" />
+                  <span>Product</span>
+                </label>
+                <label class="radio-label">
+                  <input v-model="searchMode" type="radio" value="MaterialCode" class="radio" />
+                  <span>Mat. Code</span>
+                </label>
+              </div>
+            </section>
+
+            <!-- Searchable dropdown (Skill / Product) -->
+            <section v-if="searchMode !== 'MaterialCode'">
+              <label class="section-label">
+                {{ searchMode === 'Skill' ? 'Skill' : 'Product' }}
+              </label>
+              <SearchableSelect
+                v-model="activeTerm"
+                :options="searchMode === 'Skill' ? skills : products"
+                :disabled="searchMode === 'Product' && customEnabled"
+                :placeholder="`Type to filter ${searchMode === 'Skill' ? 'skills' : 'products'}…`"
+              />
+
+              <label v-if="searchMode === 'Product'" class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
+                <input v-model="customEnabled" type="checkbox" class="checkbox" />
+                <span class="text-sm text-gray-400 group-hover:text-gray-300 select-none transition-colors">
+                  Enter custom product name
+                </span>
+              </label>
+              <input
+                v-if="searchMode === 'Product' && customEnabled"
+                v-model="customTerm"
+                type="text"
+                placeholder="Product name…"
+                class="form-input mt-2"
+              />
+            </section>
+
+            <!-- Material Code input -->
+            <section v-else>
+              <label class="section-label">Material Code</label>
+              <input
+                v-model="matCodeTerm"
+                type="text"
+                placeholder="e.g. 397134"
+                inputmode="numeric"
+                class="form-input"
+              />
+              <p class="mt-1.5 text-xs text-gray-500">Skill and Product are ignored in this mode.</p>
+            </section>
+
+            <div class="divider" />
+
+            <!-- Version filter (not shown for Material Code) -->
+            <section v-if="searchMode !== 'MaterialCode'">
+              <label class="section-label">
+                Version Filter <span class="text-gray-600 font-normal">(optional)</span>
+              </label>
+              <input
+                v-model="version"
+                type="text"
+                placeholder="e.g. 8, 9, 10"
+                class="form-input"
+              />
+            </section>
+          </template>
         </div>
 
         <!-- Actions + log -->
@@ -374,6 +416,8 @@ const skills   = computed(() => skillsData.value?.skills   ?? [])
 const products = computed(() => skillsData.value?.products ?? [])
 
 // ── Form state ───────────────────────────────────────────────────────────────
+const searchBy       = ref<'FL' | 'SR'>('FL')
+const srNumber       = ref('')
 const fl             = ref('')
 const searchMode     = ref<'Skill' | 'Product' | 'MaterialCode'>('Skill')
 const skillTerm      = ref('')
@@ -467,7 +511,14 @@ const effectiveTerm = computed(() => {
 
 function log(msg: string) { logs.value.push(msg) }
 
+const SR_PATTERN = /^\d+-\d+$/
+
 function startSearch() {
+  if (searchBy.value === 'SR') startSrSearch()
+  else startFlSearch()
+}
+
+function startFlSearch() {
   const term = effectiveTerm.value
   if (!fl.value.trim()) {
     logs.value        = ['Please enter a Customer FL.']
@@ -482,18 +533,60 @@ function startSearch() {
     return
   }
 
+  resetForSearch()
+  launchEntitlementSearch({ fl: fl.value.trim(), mode: searchMode.value, term, version: version.value ?? '' })
+}
+
+async function startSrSearch() {
+  const sr = srNumber.value.trim()
+  if (!SR_PATTERN.test(sr)) {
+    logs.value        = ['Please enter a valid SR number, e.g. 1-23759529231.']
+    statusColor.value = 'red'
+    return
+  }
+
+  resetForSearch()
+  log(`Looking up SR ${sr}…`)
+
+  try {
+    const details = await $fetch<{ fl: string; skill: string }>('/api/caseDetails', {
+      query: { sr, user: auth.handle, pass: auth.password },
+    })
+
+    if (!details.skill) {
+      log(`SR ${sr} → FL ${details.fl}, but no Operational Skill was found — cannot search.`)
+      statusColor.value = 'red'
+      isSearching.value = false
+      return
+    }
+
+    fl.value = details.fl
+    log(`SR ${sr} → FL ${details.fl}, Operational Skill: ${details.skill}`)
+    launchEntitlementSearch({ fl: details.fl, mode: 'Skill', term: details.skill, version: '' })
+  } catch (e: any) {
+    log(`Error: ${e?.data?.message ?? e.message ?? 'Failed to look up SR.'}`)
+    statusColor.value = 'red'
+    isSearching.value = false
+  }
+}
+
+function resetForSearch() {
   results.value     = []
-  logs.value        = ['Connecting…']
+  logs.value        = []
   copiedIdx.value   = null
   isSearching.value = true
   statusColor.value = 'orange'
   sidebarOpen.value = false
+}
+
+function launchEntitlementSearch(opts: { fl: string; mode: 'Skill' | 'Product' | 'MaterialCode'; term: string; version: string }) {
+  log('Connecting…')
 
   const params = new URLSearchParams({
-    fl:           fl.value.trim(),
-    mode:         searchMode.value,
-    term,
-    version:      version.value ?? '',
+    fl:           opts.fl,
+    mode:         opts.mode,
+    term:         opts.term,
+    version:      opts.version,
     searchParent: searchParent.value ? '1' : '0',
     user:         auth.handle,
     pass:         auth.password,
