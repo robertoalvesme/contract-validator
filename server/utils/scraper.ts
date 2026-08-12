@@ -240,11 +240,18 @@ export function parseContractDetails(
     }
 
     let match = false
-    if (mode === 'Skill') {
-      match = relatedSkills.some(s => prodSkill.includes(s.toUpperCase()))
-    } else if (mode === 'MaterialCode') {
+    if (mode === 'MaterialCode') {
       match = matCode.includes(term.toUpperCase())
+    } else if (mode === 'Skill' || relatedSkills.length > 0) {
+      // Skill mode always matches on Prod Skill. Product mode does the same whenever the
+      // product term is registered to a Skill (relatedMaterials in the skills DB) — e.g.
+      // product "AMS" is registered under Prod Skill "CM Services" — so the row's Prod
+      // Skill column ("CM Services") is what must match, not the free-text term "AMS"
+      // itself (which doesn't appear in the Material Desc for that row).
+      match = relatedSkills.some(s => prodSkill.includes(s.toUpperCase()))
     } else {
+      // Product mode with no registered Skill (e.g. a custom/free-text product name):
+      // fall back to a free-text search across the identifying fields.
       const blob = [matCode, matDesc, nickname, prodSkill, minorMat].join(' ')
       match = blob.includes(term.toUpperCase())
     }

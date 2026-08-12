@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   parseActiveLinks,
@@ -100,6 +102,50 @@ describe('parseContractDetails', () => {
 
     const match = parseContractDetails(html, url, '0051969849', 'Skill', 'CM', ['CM'], 'R9')
     expect(match).toHaveLength(1)
+  })
+
+  it('matches a Product search via its registered Skill (Prod Skill), not free text in Material Desc', () => {
+    // Regression: FL 0050413302 — the product "AMS" is registered in the skills DB under
+    // Skill "CM Services" (relatedMaterials: ["AMS"]). Searching product "AMS" should match
+    // rows by their Prod Skill column ("CM Services"), since the literal term "AMS" never
+    // appears in the Material Desc "AVAYA AURA MEDIA SERVER R8 SYSTEM LIC:DS".
+    const html = tableHtml([
+      detailRow({
+        matCode: '398011',
+        matDesc: 'AVAYA AURA MEDIA SERVER R8 SYSTEM LIC:DS',
+        prodSkill: 'CM Services',
+      }),
+    ])
+    const results = parseContractDetails(html, url, '0050413302', 'Product', 'AMS', ['CM Services'], '')
+    expect(results).toHaveLength(1)
+    expect(results[0]).toMatchObject({
+      materialCode: '398011',
+      description: 'AVAYA AURA MEDIA SERVER R8 SYSTEM LIC:DS',
+      skill: 'CM SERVICES',
+    })
+  })
+
+  it('falls back to free-text matching for a Product term with no registered Skill', () => {
+    const html = tableHtml([
+      detailRow({ matDesc: 'SOME CUSTOM PRODUCT DESC', prodSkill: 'Unrelated Skill' }),
+    ])
+    const results = parseContractDetails(html, url, '0051969849', 'Product', 'CUSTOM PRODUCT', [], '')
+    expect(results).toHaveLength(1)
+  })
+
+  it('parses the real FL 0050413302 assetagree fixture and finds the AMS/CM Services rows', () => {
+    const fixturePath = resolve(
+      __dirname,
+      '../../../.tests/assetagree-fl_0050413302_agree_num_1-58952044-79.html',
+    )
+    const html = readFileSync(fixturePath, 'utf8')
+    // Mirrors what server/api/search.get.ts resolves for a Product search: term "AMS" is
+    // registered under Skill "CM Services" in default_skills.json.
+    const results = parseContractDetails(html, url, '0050413302', 'Product', 'AMS', ['CM Services'], '')
+
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.every(r => r.skill === 'CM SERVICES')).toBe(true)
+    expect(results.some(r => r.description === 'AVAYA AURA MEDIA SERVER R8 SYSTEM LIC:DS')).toBe(true)
   })
 })
 
