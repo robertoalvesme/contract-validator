@@ -378,6 +378,12 @@
                 <span class="font-semibold text-gray-100 text-sm font-mono">{{ r.contractNum }}</span>
                 <span class="text-gray-400 text-xs truncate">{{ r.description }}</span>
               </div>
+              <div v-if="r.isGracePeriod" class="flex items-center gap-x-3 gap-y-1 flex-wrap mt-1.5 text-xs text-amber-300/90">
+                <span v-if="r.status">Status: <span class="font-medium">{{ r.status }}</span></span>
+                <span v-if="r.agreeStart || r.agreeEnd">
+                  {{ r.agreeStart || '?' }} → {{ r.agreeEnd || '?' }}
+                </span>
+              </div>
             </div>
 
             <!-- Actions -->
@@ -458,6 +464,7 @@ interface ContractResult {
   description: string
   url: string
   materialCode: string
+  status: string
   agreeStart: string
   agreeEnd: string
   isGracePeriod: boolean
@@ -655,7 +662,10 @@ function buildClipboardText(r: ContractResult): string {
     `Agree Start: ${r.agreeStart || '-'}`,
     `Agree End: ${r.agreeEnd || '-'}`,
   ]
-  if (r.isGracePeriod) lines.push('Grace Period: Yes')
+  if (r.isGracePeriod) {
+    lines.push('Grace Period: Yes')
+    lines.push(`Status: ${r.status || '-'}`)
+  }
   if (r.isSubscriptionPlan) {
     lines.push(`Subscription Plan: ${r.subscriptionPlanName ?? '-'}`)
     lines.push(`Svc Mat Desc: ${r.svcMatDesc ?? '-'}`)
