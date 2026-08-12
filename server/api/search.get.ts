@@ -26,7 +26,18 @@ export default defineEventHandler(async (event) => {
   const versionSearch = version ? `R${version}` : ''
   const isMaterialCode = mode === 'MaterialCode'
   const { skillMap } = isMaterialCode ? { skillMap: {} as Record<string, string[]> } : await getSkillsData()
-  const relatedSkills = mode === 'Skill' ? (skillMap[term] ?? [term]) : []
+
+  // Product mode: resolve the selected product to the Skill(s) it's registered under
+  // (relatedMaterials in the skills DB — e.g. product "AMS" → Skill "CM Services") so
+  // contract rows are matched by their Prod Skill column, same as Skill mode. Falls back
+  // to an empty list for a custom/free-text product with no registered Skill.
+  const productSkillNames = mode === 'Product' ? await getSkillNamesByProduct(term) : []
+
+  const relatedSkills = mode === 'Skill'
+    ? (skillMap[term] ?? [term])
+    : mode === 'Product'
+      ? Array.from(new Set(productSkillNames.flatMap(name => skillMap[name] ?? [name])))
+      : []
 
   const push = (eventName: string, data: unknown) =>
     stream.push({ event: eventName, data: JSON.stringify(data) })
@@ -58,10 +69,10 @@ export default defineEventHandler(async (event) => {
       // ── Load contracts from DB for direct entitlement matching ──────────
       const skillsForQuery = isMaterialCode
         ? []
-        : mode === 'Skill' ? relatedSkills : await getSkillNamesByProduct(term)
+        : mode === 'Skill' ? relatedSkills : productSkillNames
 
-      const { nameSet: contractNames, codeSet: contractCodes } = isMaterialCode
-        ? { nameSet: new Set<string>(), codeSet: new Set<string>() }
+      const { nameSet: contractNames, codeSet: contractCodes, planNameByIdentifier } = isMaterialCode
+        ? { nameSet: new Set<string>(), codeSet: new Set<string>(), planNameByIdentifier: new Map<string, string>() }
         : await getContractsBySkills(skillsForQuery)
 
       const directTerm  = mode === 'Product' ? term.toUpperCase() : ''
@@ -82,7 +93,7 @@ export default defineEventHandler(async (event) => {
 
           // Direct matches on Svc Mat Desc / Svc Mat Code in the entitlements page
           const directMatches = parseEntitlementDirectMatches(
-            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term, matCodeTerm,
+            html, pageUrl, currentFl, contractNames, contractCodes, directTerm, term, matCodeTerm, planNameByIdentifier,
           )
           for (const m of directMatches) {
             await push('result', m)

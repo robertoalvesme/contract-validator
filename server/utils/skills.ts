@@ -49,17 +49,35 @@ export async function getSkillNamesByProduct(productTerm: string): Promise<strin
   return matched
 }
 
-export async function getContractsBySkills(skillNames: string[]): Promise<{ nameSet: Set<string>; codeSet: Set<string> }> {
-  if (!skillNames.length) return { nameSet: new Set<string>(), codeSet: new Set<string>() }
+export async function getContractsBySkills(skillNames: string[]): Promise<{
+  nameSet: Set<string>
+  codeSet: Set<string>
+  planNameByIdentifier: Map<string, string>
+}> {
+  if (!skillNames.length) {
+    return { nameSet: new Set<string>(), codeSet: new Set<string>(), planNameByIdentifier: new Map<string, string>() }
+  }
   const db = await getDb()
   console.log(`[getContractsBySkills] query skills $in: ${JSON.stringify(skillNames)}`)
   const docs = await contractsCol(db).find({ skills: { $in: skillNames } }).toArray()
   console.log(`[getContractsBySkills] found ${docs.length} contract(s): ${JSON.stringify(docs.map(c => ({ name: c.name, codes: c.codes, skills: c.skills })))}`)
-  return {
-    nameSet: new Set(docs.map(c => c.name.toUpperCase())),
-    codeSet: new Set(docs.flatMap(c => {
-      const list = c.codes?.length ? c.codes : c.code ? [c.code] : []
-      return list.map(code => code.toUpperCase())
-    })),
+
+  const nameSet = new Set<string>()
+  const codeSet = new Set<string>()
+  const planNameByIdentifier = new Map<string, string>()
+
+  for (const c of docs) {
+    const upperName = c.name.toUpperCase()
+    nameSet.add(upperName)
+    planNameByIdentifier.set(upperName, c.name)
+
+    const codes = c.codes?.length ? c.codes : c.code ? [c.code] : []
+    for (const code of codes) {
+      const upperCode = code.toUpperCase()
+      codeSet.add(upperCode)
+      planNameByIdentifier.set(upperCode, c.name)
+    }
   }
+
+  return { nameSet, codeSet, planNameByIdentifier }
 }
