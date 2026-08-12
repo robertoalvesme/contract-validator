@@ -130,7 +130,7 @@
                 class="form-input"
               />
               <p class="mt-1.5 text-xs text-gray-500">
-                Site e Operational Skill são obtidos automaticamente a partir da SR.
+                Site and Operational Skill are looked up automatically from the SR.
               </p>
               <label class="mt-2.5 flex items-center gap-2.5 cursor-pointer group">
                 <input v-model="searchParent" type="checkbox" class="checkbox" />
@@ -219,7 +219,7 @@
                 inputmode="numeric"
                 class="form-input"
               />
-              <p class="mt-1.5 text-xs text-gray-500">Skill e produto são ignorados neste modo.</p>
+              <p class="mt-1.5 text-xs text-gray-500">Skill and Product are ignored in this mode.</p>
             </section>
 
             <div class="divider" />
