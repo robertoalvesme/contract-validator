@@ -312,14 +312,20 @@
       <main class="flex-1 flex flex-col overflow-hidden min-w-0">
 
         <!-- Results header -->
-        <div class="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 bg-gray-900 border-b border-gray-800">
-          <h2 class="font-semibold text-gray-200">
-            Contracts Found
-            <span v-if="results.length > 0" class="ml-2 text-sm font-normal text-blue-400">
-              {{ results.length }} result{{ results.length !== 1 ? 's' : '' }}
-            </span>
-          </h2>
-          <span v-if="isSearching" class="flex items-center gap-2 text-xs text-orange-400">
+        <div class="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 bg-gray-900 border-b border-gray-800 gap-3">
+          <div class="min-w-0">
+            <h2 class="font-semibold text-gray-200">
+              Contracts Found
+              <span v-if="results.length > 0" class="ml-2 text-sm font-normal text-blue-400">
+                {{ results.length }} result{{ results.length !== 1 ? 's' : '' }}
+              </span>
+            </h2>
+            <p v-if="srSearchInfo" class="mt-0.5 text-xs text-gray-500 truncate">
+              SR {{ srSearchInfo.sr }} → FL {{ srSearchInfo.fl }} · Product Skill:
+              <span class="text-gray-400 font-medium">{{ srSearchInfo.skill }}</span>
+            </p>
+          </div>
+          <span v-if="isSearching" class="flex items-center gap-2 text-xs text-orange-400 shrink-0">
             <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
             Searching…
           </span>
@@ -479,6 +485,7 @@ const statusColor = ref<'gray' | 'orange' | 'green' | 'red'>('gray')
 const isSearching = ref(false)
 const copiedIdx   = ref<number | null>(null)
 const logPanel    = ref<HTMLElement | null>(null)
+const srSearchInfo = ref<{ sr: string; fl: string; skill: string } | null>(null)
 let   es: EventSource | null = null
 
 watch(logs, () => {
@@ -569,6 +576,7 @@ async function startSrSearch() {
 
     fl.value = details.fl
     log(`SR ${sr} → FL ${details.fl}, Operational Skill: ${details.skill}`)
+    srSearchInfo.value = { sr, fl: details.fl, skill: details.skill }
     launchEntitlementSearch({ fl: details.fl, mode: 'Skill', term: details.skill, version: '' })
   } catch (e: any) {
     log(`Error: ${e?.data?.message ?? e.message ?? 'Failed to look up SR.'}`)
@@ -578,12 +586,13 @@ async function startSrSearch() {
 }
 
 function resetForSearch() {
-  results.value     = []
-  logs.value        = []
-  copiedIdx.value   = null
-  isSearching.value = true
-  statusColor.value = 'orange'
-  sidebarOpen.value = false
+  results.value      = []
+  logs.value         = []
+  copiedIdx.value    = null
+  isSearching.value  = true
+  statusColor.value  = 'orange'
+  sidebarOpen.value  = false
+  srSearchInfo.value = null
 }
 
 function launchEntitlementSearch(opts: { fl: string; mode: 'Skill' | 'Product' | 'MaterialCode'; term: string; version: string }) {
@@ -642,10 +651,11 @@ function stopSearch() {
 }
 
 function clearResults() {
-  results.value     = []
-  logs.value        = []
-  statusColor.value = 'gray'
-  copiedIdx.value   = null
+  results.value      = []
+  logs.value         = []
+  statusColor.value  = 'gray'
+  copiedIdx.value    = null
+  srSearchInfo.value = null
 }
 
 function closeStream() { es?.close(); es = null }
