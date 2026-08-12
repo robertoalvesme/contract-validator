@@ -48,6 +48,9 @@ function getMockFile(url: string): string | null {
     if (p.endsWith('assetagree.aspx'))
       return join(MOCK_DIR, `assetagree-fl-${u.searchParams.get('fl')}_agree_num_${u.searchParams.get('agree_num')}.html`)
 
+    if (p.endsWith('casedetails.aspx'))
+      return join(MOCK_DIR, `casedetails_case_id_${u.searchParams.get('case_id')}.html`)
+
     return null
   } catch {
     return null
@@ -84,7 +87,7 @@ function ntlmGet(url: string, user: string, pass: string): Promise<string> {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function fetchPage(path: string, user: string, pass: string): Promise<string> {
+export async function fetchPage(path: string, user: string, pass: string): Promise<string> {
   const url = path.startsWith('http') ? path : `${BASE}${path}`
 
   // TEMP: verificação de credenciais — comentar após confirmar
