@@ -194,6 +194,7 @@ export interface ContractResult {
   description: string
   url: string
   materialCode: string
+  status: string
   agreeStart: string
   agreeEnd: string
   isGracePeriod: boolean
@@ -278,6 +279,7 @@ export function parseContractDetails(
       description: matDesc,
       url: cleanUrl,
       materialCode: matCode,
+      status: rowStatus,
       agreeStart: rowStart,
       agreeEnd: rowEnd,
       isGracePeriod,
@@ -345,6 +347,7 @@ export function parseEntitlementDirectMatches(
       description: svcMatDesc,
       url: pageUrl,
       materialCode: svcMatCode,
+      status: statusCell,
       agreeStart: startCell,
       agreeEnd: endCell,
       isGracePeriod,
