@@ -18,7 +18,7 @@ export function parseCaseDetails(html: string): CaseDetails {
   return { fl, skill }
 }
 
-export async function getCaseDetails(sr: string, user: string, pass: string): Promise<CaseDetails> {
-  const html = await fetchPage(`/siebelreports/casedetails.aspx?case_id=${sr}`, user, pass)
+export async function getCaseDetails(sr: string): Promise<CaseDetails> {
+  const html = await fetchPage(`/siebelreports/casedetails.aspx?case_id=${sr}`)
   return parseCaseDetails(html)
 }

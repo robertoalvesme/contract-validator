@@ -14,13 +14,6 @@
           </div>
           <span class="font-semibold text-sm text-white hidden sm:block">Contract Finder</span>
         </div>
-        <!-- User + logout -->
-        <p class="hidden md:block text-xs text-gray-500 shrink-0">
-          Signed in as <span class="text-gray-300">{{ auth.handle }}</span>
-        </p>
-        <button class="text-xs text-gray-400 hover:text-red-400 transition-colors shrink-0 py-1" @click="logout">
-          Logout
-        </button>
       </div>
       <!-- Nav breadcrumb -->
       <div class="flex items-center gap-1 px-4 pb-2.5 overflow-x-auto">
@@ -403,11 +396,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
-
-const auth   = useAuthStore()
-const router = useRouter()
-
 interface PlanDto {
   id: string
   name: string
@@ -567,13 +555,6 @@ async function onFileSelected(e: Event) {
   } finally {
     importing.value = false
   }
-}
-
-// ── Auth ─────────────────────────────────────────────────────────────────────────
-
-function logout() {
-  auth.logout()
-  router.push('/login')
 }
 </script>
 

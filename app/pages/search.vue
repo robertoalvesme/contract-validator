@@ -78,7 +78,7 @@
           </button>
         </div>
 
-        <!-- Nav + user -->
+        <!-- Nav -->
         <div class="shrink-0 px-4 py-2 border-b border-gray-800 flex flex-wrap items-center gap-x-3 gap-y-1">
           <NuxtLink to="/skills"
             class="text-xs text-gray-400 hover:text-gray-200 transition-colors py-0.5"
@@ -88,15 +88,6 @@
             class="text-xs text-gray-400 hover:text-gray-200 transition-colors py-0.5"
             @click="sidebarOpen = false"
           >Subscription Plans</NuxtLink>
-          <span class="flex-1" />
-          <button class="text-xs text-gray-400 hover:text-red-400 transition-colors py-0.5" @click="logout">
-            Logout
-          </button>
-        </div>
-
-        <!-- User badge -->
-        <div class="shrink-0 px-4 py-2 border-b border-gray-800 bg-gray-900/50">
-          <p class="text-xs text-gray-500">Signed in as <span class="text-gray-300">{{ auth.handle }}</span></p>
         </div>
 
         <!-- Form -->
@@ -417,11 +408,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
-
-const auth   = useAuthStore()
-const router = useRouter()
-
 // ── Skills / Products ────────────────────────────────────────────────────────
 const { data: skillsData } = await useFetch('/api/skills')
 const skills   = computed(() => skillsData.value?.skills   ?? [])
@@ -564,7 +550,7 @@ async function startSrSearch() {
 
   try {
     const details = await $fetch<{ fl: string; skill: string }>('/api/caseDetails', {
-      query: { sr, user: auth.handle, pass: auth.password },
+      query: { sr },
     })
 
     if (!details.skill) {
@@ -604,8 +590,6 @@ function launchEntitlementSearch(opts: { fl: string; mode: 'Skill' | 'Product' |
     term:         opts.term,
     version:      opts.version,
     searchParent: searchParent.value ? '1' : '0',
-    user:         auth.handle,
-    pass:         auth.password,
   })
 
   es = new EventSource(`/api/search?${params}`)
@@ -725,12 +709,6 @@ async function copy(r: ContractResult, idx: number) {
     log('Failed to copy to clipboard.')
     statusColor.value = 'red'
   }
-}
-
-function logout() {
-  closeStream()
-  auth.logout()
-  router.push('/login')
 }
 
 onUnmounted(closeStream)
