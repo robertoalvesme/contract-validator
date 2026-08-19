@@ -1,26 +1,16 @@
 // Portal Avaya usa certificado de CA interna — desabilitar verificação TLS
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
-import https from 'node:https'
 import { load } from 'cheerio'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-
-// @ts-ignore – httpntlm has no TypeScript types
-import httpntlm from 'httpntlm'
 import { evaluateGracePeriod } from './gracePeriod'
 
-// httpntlm cria seu próprio https.Agent internamente sem herdar as opções globais.
-// Passamos um agent explícito para garantir: sem verificação de certificado,
-// keepAlive (obrigatório para o handshake NTLM de 3 etapas) e TLS legado.
-const ntlmAgent = new https.Agent({
-  rejectUnauthorized: false,
-  keepAlive: true,
-  minVersion: 'TLSv1' as any,
-  ciphers: 'ALL',
-})
-
 const BASE = 'https://report.avaya.com'
+
+// Proxy interno que resolve a autenticação SSO e devolve o HTML do relatório —
+// substitui o login NTLM manual que a aplicação fazia antes.
+const REPORT_PROXY = 'https://sdtools2.avaya.com/utility/get_report_html'
 
 // ─── Mock mode (NUXT_MOCK=1 → lê arquivos de .tests/ em vez de bater no portal) ──
 
@@ -57,41 +47,10 @@ function getMockFile(url: string): string | null {
   }
 }
 
-// ─── NTLM fetch ────────────────────────────────────────────────────────────────
-
-function ntlmGet(url: string, user: string, pass: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    httpntlm.get(
-      {
-        url,
-        username: user,
-        password: pass,
-        domain: '',
-        workstation: '',
-        ntlmv2: true,
-        strictSSL: false,
-        agent: ntlmAgent,
-      },
-      (err: Error | null, res: { statusCode: number; body: string }) => {
-        if (err) return reject(new Error(`NTLM request failed: ${err.message}`))
-        console.log(`[scraper] NTLM ${res.statusCode} ${url}`)
-        if (res.statusCode === 401)
-          return reject(new Error('Credenciais inválidas — servidor rejeitou autenticação NTLM.'))
-        if (res.statusCode >= 400)
-          return reject(new Error(`HTTP ${res.statusCode} de ${url}`))
-        resolve(res.body)
-      }
-    )
-  })
-}
-
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-export async function fetchPage(path: string, user: string, pass: string): Promise<string> {
+export async function fetchPage(path: string): Promise<string> {
   const url = path.startsWith('http') ? path : `${BASE}${path}`
-
-  // TEMP: verificação de credenciais — comentar após confirmar
-  console.log(`[auth] handle="${user}"`)
 
   if (USE_MOCK) {
     const mockFile = getMockFile(url)
@@ -104,8 +63,13 @@ export async function fetchPage(path: string, user: string, pass: string): Promi
     throw new Error(err)
   }
 
-  console.log(`[scraper] NTLM GET ${url}  (user: ${user})`)
-  const html = await ntlmGet(url, user, pass)
+  const proxyUrl = `${REPORT_PROXY}?server_url=${encodeURIComponent(url)}`
+  console.log(`[scraper] GET ${proxyUrl}`)
+  const res = await fetch(proxyUrl)
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} de ${proxyUrl}`)
+  }
+  const html = await res.text()
   const tableCount = (html.match(/<table/gi) ?? []).length
   console.log(`[scraper] body ${html.length} chars, ${tableCount} table(s)`)
   return html
@@ -365,41 +329,37 @@ export function parseEntitlementDirectMatches(
 
 export async function getEntitlementsPageData(
   fl: string,
-  user: string,
-  pass: string,
 ): Promise<{ links: string[]; html: string; pageUrl: string }> {
   const path = `/siebelreports/flentitlements.aspx?fl=${fl}`
   const pageUrl = `${BASE}${path}`
-  const html = await fetchPage(path, user, pass)
+  const html = await fetchPage(path)
   const links = parseActiveLinks(html, pageUrl)
   return { links, html, pageUrl }
 }
 
-export async function getActiveContractLinks(fl: string, user: string, pass: string): Promise<string[]> {
-  const { links } = await getEntitlementsPageData(fl, user, pass)
+export async function getActiveContractLinks(fl: string): Promise<string[]> {
+  const { links } = await getEntitlementsPageData(fl)
   return links
 }
 
-export async function getParentId(fl: string, user: string, pass: string): Promise<string> {
-  const html = await fetchPage(`/siebelreports/fldrill.aspx?site_id=${fl}`, user, pass)
+export async function getParentId(fl: string): Promise<string> {
+  const html = await fetchPage(`/siebelreports/fldrill.aspx?site_id=${fl}`)
   return parseParentId(html)
 }
 
-export async function getSiblingFLs(parentId: string, fl: string, user: string, pass: string): Promise<string[]> {
-  const html = await fetchPage(`/details/LookupTool.aspx?siebel_parent=${parentId}`, user, pass)
+export async function getSiblingFLs(parentId: string, fl: string): Promise<string[]> {
+  const html = await fetchPage(`/details/LookupTool.aspx?siebel_parent=${parentId}`)
   return parseSiblingFLs(html, fl)
 }
 
 export async function getContractMatches(
   contractUrl: string,
   fl: string,
-  user: string,
-  pass: string,
   mode: 'Skill' | 'Product' | 'MaterialCode',
   term: string,
   relatedSkills: string[],
   versionSearch: string,
 ): Promise<ContractResult[]> {
-  const html = await fetchPage(contractUrl, user, pass)
+  const html = await fetchPage(contractUrl)
   return parseContractDetails(html, contractUrl, fl, mode, term, relatedSkills, versionSearch)
 }

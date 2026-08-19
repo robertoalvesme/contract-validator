@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { redirect: '/login' },
+    '/': { redirect: '/search' },
   },
 
   devtools: { enabled: false },

@@ -15,10 +15,8 @@ export default defineEventHandler(async (event) => {
   const term         = String(q.term ?? '')
   const version      = String(q.version ?? '')
   const searchParent = q.searchParent === '1'
-  const user         = String(q.user ?? '')
-  const pass         = String(q.pass ?? '')
 
-  if (!fl || !term || !user || !pass) {
+  if (!fl || !term) {
     throw createError({ statusCode: 400, message: 'Missing required parameters.' })
   }
 
@@ -50,10 +48,10 @@ export default defineEventHandler(async (event) => {
       if (searchParent) {
         await push('status', { message: 'Looking up Siebel Parent…' })
         try {
-          const parentId = await getParentId(fl, user, pass)
+          const parentId = await getParentId(fl)
           if (parentId) {
             await push('status', { message: `Parent found: ${parentId}. Getting siblings…` })
-            const siblings = await getSiblingFLs(parentId, fl, user, pass)
+            const siblings = await getSiblingFLs(parentId, fl)
             flList.push(...siblings)
             await push('status', {
               message: `${siblings.length} sibling FL(s) found. Reading contracts…`,
@@ -89,7 +87,7 @@ export default defineEventHandler(async (event) => {
       for (const currentFl of flList) {
         await push('status', { message: `Reading active contracts for FL ${currentFl}…` })
         try {
-          const { links, html, pageUrl } = await getEntitlementsPageData(currentFl, user, pass)
+          const { links, html, pageUrl } = await getEntitlementsPageData(currentFl)
 
           // Direct matches on Svc Mat Desc / Svc Mat Code in the entitlements page
           const directMatches = parseEntitlementDirectMatches(
@@ -118,7 +116,7 @@ export default defineEventHandler(async (event) => {
 
         try {
           const matches = await getContractMatches(
-            url, contractFl, user, pass, mode, term, relatedSkills, versionSearch,
+            url, contractFl, mode, term, relatedSkills, versionSearch,
           )
           for (const m of matches) {
             await push('result', m)
