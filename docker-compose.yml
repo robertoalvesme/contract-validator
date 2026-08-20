@@ -25,6 +25,7 @@ services:
       HOST: 0.0.0.0
       PORT: "8080"
       MONGODB_URI: mongodb://mongo:27017/contract_finder
+      NUXT_APP_BASE_URL: ${NUXT_APP_BASE_URL:-/}
     depends_on:
       mongo:
         condition: service_healthy
