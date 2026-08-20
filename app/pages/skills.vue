@@ -316,6 +316,8 @@
 </template>
 
 <script setup lang="ts">
+useHead({ title: 'Skills' })
+
 interface SkillDto {
   id: string
   name: string

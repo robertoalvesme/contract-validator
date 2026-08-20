@@ -396,6 +396,8 @@
 </template>
 
 <script setup lang="ts">
+useHead({ title: 'Subscription Plans' })
+
 interface PlanDto {
   id: string
   name: string

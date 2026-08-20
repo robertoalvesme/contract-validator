@@ -408,6 +408,8 @@
 </template>
 
 <script setup lang="ts">
+useHead({ title: 'Search' })
+
 // ── Skills / Products ────────────────────────────────────────────────────────
 const { data: skillsData } = await useFetch('/api/skills')
 const skills   = computed(() => skillsData.value?.skills   ?? [])
