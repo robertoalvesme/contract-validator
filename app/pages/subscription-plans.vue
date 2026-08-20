@@ -18,7 +18,7 @@
       <!-- Nav breadcrumb -->
       <div class="flex items-center gap-1 px-4 pb-2.5 overflow-x-auto">
         <NuxtLink
-          to="/search"
+          to="/"
           class="text-xs text-gray-400 hover:text-gray-200 transition-colors whitespace-nowrap flex items-center gap-1 py-0.5"
         >
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
