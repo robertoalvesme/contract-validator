@@ -592,7 +592,8 @@ function launchEntitlementSearch(opts: { fl: string; mode: 'Skill' | 'Product' |
     searchParent: searchParent.value ? '1' : '0',
   })
 
-  es = new EventSource(`/api/search?${params}`)
+  const base = useRuntimeConfig().app.baseURL.replace(/\/$/, '')
+  es = new EventSource(`${base}/api/search?${params}`)
 
   es.addEventListener('status', (e) => {
     log(JSON.parse(e.data).message)
